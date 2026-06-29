@@ -1,0 +1,231 @@
+### Register
+POST http://localhost:3002/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "customer4@test.com",
+  "username": "testcustomer4",
+  "name": "Test Customer 4",
+  "password": "Password@123"
+}
+
+###  Login
+POST http://localhost:3002/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "customer1@test.com",
+  "password": "Password@123"
+}
+
+### Add Address
+POST http://localhost:3002/api/user/addresses
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoiY3VzdG9tZXJAdGVzdC5jb20iLCJyb2xlIjoiQ1VTVE9NRVIiLCJpYXQiOjE3ODIxMzYyMjAsImV4cCI6MTc4MjEzNzEyMH0.A0hv2_mJPKmsP0y3e9vCxudec1JHO0FeoFU-pOs2ORo
+Content-Type: application/json
+
+{
+  "street": "123 Main Street",
+  "city": "Berlin",
+  "state": "Berlin",
+  "country": "Germany",
+  "postalCode": "10115",
+  "isDefault": true
+}
+
+### Get Addresses
+GET http://localhost:3002/api/user/addresses
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoiY3VzdG9tZXJAdGVzdC5jb20iLCJyb2xlIjoiQ1VTVE9NRVIiLCJpYXQiOjE3ODIxMzYyMjAsImV4cCI6MTc4MjEzNzEyMH0.A0hv2_mJPKmsP0y3e9vCxudec1JHO0FeoFU-pOs2ORo
+
+### Create Category
+POST http://localhost:3002/api/categories
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoiY3VzdG9tZXJAdGVzdC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3ODIyODY5NzcsImV4cCI6MTc4MjI4Nzg3N30.-s8OeSUJo4FLTRHGhaCwNeQhJ0Vqjup2ZxNMsoOIOSg
+Content-Type: application/json
+
+{
+  "name": "Electronics",
+  "slug": "electronics",
+  "description": "Electronic devices and accessories"
+}
+
+### Create Product
+POST http://localhost:3002/api/products
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoiY3VzdG9tZXJAdGVzdC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3ODIyODY5NzcsImV4cCI6MTc4MjI4Nzg3N30.-s8OeSUJo4FLTRHGhaCwNeQhJ0Vqjup2ZxNMsoOIOSg
+Content-Type: application/json
+
+{
+  "name": "iPhone 15 Pro",
+  "slug": "iphone-15-pro",
+  "description": "Apple iPhone 15 Pro 256GB",
+  "price": 999.99,
+  "stock": 50,
+  "images": ["https://example.com/iphone.jpg"],
+  "categoryId": 1
+}
+
+### Get Products (public, no token needed)
+GET http://localhost:3002/api/products
+
+### Search + Filter
+GET http://localhost:3002/api/products?search=iphone&minPrice=500&maxPrice=1500&inStock=true
+
+### Get By Slug
+GET http://localhost:3002/api/products/iphone-15-pro
+
+### Get By Category
+GET http://localhost:3002/api/products?categoryId=1&page=1&limit=10
+
+### Get Cart (auto-created if not exists)
+GET http://localhost:3002/api/cart
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyMzc4MDc2LCJleHAiOjE3ODIzNzg5NzZ9._MIEFlC-Fs2wS4IobnNhmiOp8X5eeNZyQx8lqnp35FE
+
+### Add Item
+POST http://localhost:3002/api/cart/items
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyMzEwMTY5LCJleHAiOjE3ODIzMTEwNjl9.3oVIqtdqRGbN-N53Xm1zZevzqf039vGxwADquucoJH8
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "quantity": 2
+}
+
+### Add Same Item Again (quantity increases)
+POST http://localhost:3002/api/cart/items
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyNDcwMjEyLCJleHAiOjE3ODI0NzExMTJ9.wJ6tBWn4wCkKKqlBipK2P2KnfWq0KrfDE9wp52SO-7o
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "quantity": 1
+}
+
+### Update Quantity
+PATCH http://localhost:3002/api/cart/items/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyMzEwMTY5LCJleHAiOjE3ODIzMTEwNjl9.3oVIqtdqRGbN-N53Xm1zZevzqf039vGxwADquucoJH8
+Content-Type: application/json
+
+{
+  "quantity": 5
+}
+
+### Remove Item
+DELETE http://localhost:3002/api/cart/items/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyMzEwMTY5LCJleHAiOjE3ODIzMTEwNjl9.3oVIqtdqRGbN-N53Xm1zZevzqf039vGxwADquucoJH8
+
+### Clear Cart
+DELETE http://localhost:3002/api/cart
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyMzEwMTY5LCJleHAiOjE3ODIzMTEwNjl9.3oVIqtdqRGbN-N53Xm1zZevzqf039vGxwADquucoJH8
+
+### 1. Add items to cart first
+POST http://localhost:3002/api/cart/items
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyMzc3Mzc2LCJleHAiOjE3ODIzNzgyNzZ9.VoCAIZ3ac-UtgOslLrPY_ENjKMr5EDt45lQgGWKvvYs
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "quantity": 2
+}
+
+### 2. Add an address
+POST http://localhost:3002/api/user/addresses
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyNDcwMjEyLCJleHAiOjE3ODI0NzExMTJ9.wJ6tBWn4wCkKKqlBipK2P2KnfWq0KrfDE9wp52SO-7o
+Content-Type: application/json
+
+{
+  "street": "123 Main St",
+  "city": "Berlin",
+  "state": "Berlin",
+  "country": "Germany",
+  "postalCode": "10115",
+  "isDefault": true
+}
+
+### 3. Place Order
+POST http://localhost:3002/api/orders
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyNDcwMjEyLCJleHAiOjE3ODI0NzExMTJ9.wJ6tBWn4wCkKKqlBipK2P2KnfWq0KrfDE9wp52SO-7o
+Content-Type: application/json
+
+{
+  "addressId": 5,
+  "notes": "Please leave at door"
+}
+
+### 4. View My Orders
+GET http://localhost:3002/api/orders
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyMzc4MDc2LCJleHAiOjE3ODIzNzg5NzZ9._MIEFlC-Fs2wS4IobnNhmiOp8X5eeNZyQx8lqnp35FE
+
+### 5. View Single Order
+GET http://localhost:3002/api/orders/2
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyNDcwMjEyLCJleHAiOjE3ODI0NzExMTJ9.wJ6tBWn4wCkKKqlBipK2P2KnfWq0KrfDE9wp52SO-7o
+
+### 6. Cancel Order (only PENDING)
+PATCH http://localhost:3002/api/orders/1/cancel
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyMzc4MDc2LCJleHAiOjE3ODIzNzg5NzZ9._MIEFlC-Fs2wS4IobnNhmiOp8X5eeNZyQx8lqnp35FE
+
+### 7. Admin — View All Orders
+GET http://localhost:3002/api/orders/admin/all?status=CANCELLED
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoiY3VzdG9tZXJAdGVzdC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3ODIzNzkyNjksImV4cCI6MTc4MjM4MDE2OX0.sXyuS5gyVw8aQ5NSYFl_qPDy7CYrtLoX1w8OaRwHbEA
+
+### 8. Admin — Update Status
+PATCH http://localhost:3002/api/orders/1/status
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoiY3VzdG9tZXJAdGVzdC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3ODIzNzg2MTQsImV4cCI6MTc4MjM3OTUxNH0.tiTivzghDwAkjsuQCPD6Ua2BkCahr-jc9zDAuLknKEQ
+Content-Type: application/json
+
+{
+  "status": "PAID"
+}
+
+### Step 1 — Place an order first
+POST http://localhost:3002/api/orders
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyNDcwMjEyLCJleHAiOjE3ODI0NzExMTJ9.wJ6tBWn4wCkKKqlBipK2P2KnfWq0KrfDE9wp52SO-7o
+Content-Type: application/json
+
+{
+  "addressId": 3
+}
+
+### Step 2 — Create Payment Intent
+POST http://localhost:3002/api/payment/create-intent
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyNDcwMjEyLCJleHAiOjE3ODI0NzExMTJ9.wJ6tBWn4wCkKKqlBipK2P2KnfWq0KrfDE9wp52SO-7o
+Content-Type: application/json
+
+{
+  "orderId": 2
+}
+
+### Create Review (must have DELIVERED order first)
+POST http://localhost:3002/api/products/1/reviews
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyNDgzODAxLCJleHAiOjE3ODI0ODQ3MDF9.WabE_rf7SAHxGDozm2V41GpEquxhJ9O0FO5NVzMX-HM
+Content-Type: application/json
+
+{
+  "rating": 5,
+  "comment": "Excellent product! Fast delivery and great quality."
+}
+
+### Get Product Reviews (public)
+GET http://localhost:3002/api/products/1/reviews
+
+### Filter by rating
+GET http://localhost:3002/api/products/1/reviews?rating=5
+
+### Get My Review for a Product
+GET http://localhost:3002/api/products/1/reviews/mine
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyNDgzODAxLCJleHAiOjE3ODI0ODQ3MDF9.WabE_rf7SAHxGDozm2V41GpEquxhJ9O0FO5NVzMX-HM
+
+### Get All My Reviews
+GET http://localhost:3002/api/reviews/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyNDgzODAxLCJleHAiOjE3ODI0ODQ3MDF9.WabE_rf7SAHxGDozm2V41GpEquxhJ9O0FO5NVzMX-HM
+
+### Update Review
+PATCH http://localhost:3002/api/reviews/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyNDgzODAxLCJleHAiOjE3ODI0ODQ3MDF9.WabE_rf7SAHxGDozm2V41GpEquxhJ9O0FO5NVzMX-HM
+Content-Type: application/json
+
+{
+  "rating": 4,
+  "comment": "Good product but delivery was slow."
+}
+
+### Delete Review
+DELETE http://localhost:3002/api/reviews/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyNDgzODAxLCJleHAiOjE3ODI0ODQ3MDF9.WabE_rf7SAHxGDozm2V41GpEquxhJ9O0FO5NVzMX-HM
