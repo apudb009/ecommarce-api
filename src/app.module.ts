@@ -18,6 +18,7 @@ import { BannerModule } from './banner/banner.module';
 import { InvoiceModule } from './invoice/invoice.module';
 import { CouponModule } from './coupon/coupon.module';
 import { WishlistModule } from './wishlist/wishlist.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
     InvoiceModule,
     CouponModule,
     WishlistModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [
