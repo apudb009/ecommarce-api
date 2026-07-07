@@ -16,7 +16,9 @@ import { UpdateReviewDto } from './dto/update-review.dto';
 import { Public } from 'src/auth/constants';
 import { FilterReviewDto } from './dto/filter-review.dto';
 import { Role } from 'src/generated/prisma/enums';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth('access-token')
 @Controller('api')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
@@ -27,9 +29,9 @@ export class ReviewController {
   create(
     @Body() createReviewDto: CreateReviewDto,
     @Param('id', ParseIntPipe) productId: number,
-    @Param('id', ParseIntPipe) userId: number,
+    @Request() req: { user: { sub: number } },
   ) {
-    return this.reviewService.create(createReviewDto, productId, userId);
+    return this.reviewService.create(createReviewDto, productId, req.user.sub);
   }
 
   // GET /api/products/:id/reviews (public)
@@ -40,6 +42,14 @@ export class ReviewController {
     @Query() dto: FilterReviewDto,
   ) {
     return this.reviewService.findAll(productId, dto);
+  }
+
+  @Get('products/:id/reviews/mine')
+  findMyAllReviewForProduct(
+    @Param('id', ParseIntPipe) productId: number,
+    @Request() req: { user: { sub: number } },
+  ) {
+    return this.reviewService.findOne(productId, req.user.sub);
   }
 
   // GET /api/reviews/me

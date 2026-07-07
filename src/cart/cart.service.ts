@@ -13,12 +13,15 @@ import {
   FormattedCart,
   FormattedCartItem,
 } from './entities/cart.entity';
+import { AddCouponToCartDto } from './dto/add-coupon-to-cart.dto';
+import { CouponService } from 'src/coupon/coupon.service';
 
 @Injectable()
 export class CartService {
   constructor(
     private prisma: PrismaService,
     private product: ProductService,
+    private coupon: CouponService,
   ) {}
 
   // ── GET OR CREATE CART ─────────────────────────────
@@ -122,6 +125,61 @@ export class CartService {
     return await this.getFormattedCart(userId);
   }
 
+  // ── Apply Coupon ──────────────────────
+  async applyCoupon(dto: AddCouponToCartDto, userId: number) {
+    const cart = await this.getFormattedCart(userId);
+
+    if (!cart) {
+      throw new NotFoundException('Cart not found');
+    }
+
+    if (cart.userId !== userId) {
+      throw new BadRequestException('Cart does not belong to user');
+    }
+
+    //check for coupon vatidation
+    const { discount, finalAmount, couponCode } = dto;
+
+    await this.prisma.cart.update({
+      where: {
+        userId,
+      },
+      data: {
+        discountAmount: discount,
+        couponCode,
+      },
+    });
+
+    return {
+      ...cart,
+      totalAmount: finalAmount,
+    };
+  }
+
+  async removeCoupon(userId: number) {
+    const cart = await this.prisma.cart.findUnique({
+      where: {
+        userId,
+      },
+    });
+
+    if (!cart) {
+      throw new NotFoundException('Cart not found');
+    }
+
+    await this.prisma.cart.update({
+      where: {
+        userId,
+      },
+      data: {
+        discountAmount: 0,
+        couponCode: null,
+      },
+    });
+
+    return await this.getFormattedCart(userId);
+  }
+
   // ── UPDATE ITEM QUANTITY ────────────────────────────
   async updateItemQuantity(
     userId: number,
@@ -205,6 +263,25 @@ export class CartService {
       throw new NotFoundException('Cart item not found');
     }
 
+    //if cart-item quantity is 1, remove coupon if exist
+    const cartItemCount = await this.prisma.cartItem.count({
+      where: {
+        cartId: cart.id,
+      },
+    });
+
+    if (cartItemCount === 1) {
+      await this.prisma.cart.update({
+        where: {
+          userId,
+        },
+        data: {
+          discountAmount: 0,
+          couponCode: null,
+        },
+      });
+    }
+
     await this.prisma.cartItem.delete({
       where: {
         cartId_productId: {
@@ -232,6 +309,17 @@ export class CartService {
     await this.prisma.cartItem.deleteMany({
       where: {
         cartId: cart.id,
+      },
+    });
+
+    //Cart also need to update when there is no item in cart
+    await this.prisma.cart.update({
+      where: {
+        userId,
+      },
+      data: {
+        discountAmount: 0,
+        couponCode: null,
       },
     });
 
@@ -303,6 +391,11 @@ export class CartService {
       items,
       totalItems: totalQuantity,
       totalAmount,
+      grandTotal: cart.discountAmount
+        ? totalAmount - Number(cart.discountAmount)
+        : totalAmount,
+      discountAmount: cart.discountAmount ? Number(cart.discountAmount) : 0,
+      couponCode: cart.couponCode ? cart.couponCode : '',
       updatedAt: cart.updatedAt,
     };
   }

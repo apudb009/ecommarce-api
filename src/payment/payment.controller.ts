@@ -11,7 +11,9 @@ import type { Request as ExpressRequest } from 'express';
 import { PaymentService } from './payment.service';
 import { CreatePaymentIntentDto } from './dto/create-payment-intent.dto';
 import { Public } from 'src/auth/constants';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth('access-token')
 @Controller('api/payment')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}

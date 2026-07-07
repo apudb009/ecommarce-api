@@ -29,6 +29,9 @@ model User {
   addresses Address[]
   reviews   Review[]
   cart      Cart?
+  invoices  Invoice[]
+  couponUses CouponUse[]
+  wishlist Wishlist?
 }
 
 enum Role {
@@ -82,6 +85,7 @@ model Product {
   orderItems OrderItem[]
   reviews    Review[]
   cartItems  CartItem[]
+  wishlistItems WishlistItem[]
 }
 
 // ── REVIEW ─────────────────────────────────────────
@@ -109,6 +113,8 @@ model Cart {
   userId    Int        @unique  // one cart per user
 
   items     CartItem[]
+  discountAmount Decimal?  @db.Decimal(10, 2)
+  couponCode     String?
 }
 
 model CartItem {
@@ -140,6 +146,10 @@ model Order {
 
   items     OrderItem[]
   payment   Payment?
+  invoice   Invoice?
+  discountAmount Decimal?  @db.Decimal(10, 2)
+  couponCode     String?
+  couponUse      CouponUse?
 }
 
 enum OrderStatus {
@@ -184,4 +194,102 @@ enum PaymentStatus {
   SUCCEEDED
   FAILED
   REFUNDED
+}
+
+// ── BANNER ─────────────────────────────────────────
+model Banner {
+  id        Int      @id @default(autoincrement())
+  title     String
+  subtitle  String?
+  image     String   // image URL
+  link      String?  // click destination
+  isActive  Boolean  @default(true)
+  position  Int      @default(0)  // order/priority
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ── INVOICE ────────────────────────────────────────
+model Invoice {
+  id          Int           @id @default(autoincrement())
+  invoiceNo   String        @unique  // INV-2026-0001
+  status      InvoiceStatus @default(UNPAID)
+  issuedAt    DateTime      @default(now())
+  dueDate     DateTime?
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  order       Order         @relation(fields: [orderId], references: [id])
+  orderId     Int           @unique  // one invoice per order
+
+  user        User          @relation(fields: [userId], references: [id])
+  userId      Int
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PAID
+  CANCELLED
+}
+
+// ── COUPON ─────────────────────────────────────────
+model Coupon {
+  id             Int        @id @default(autoincrement())
+  code           String     @unique
+  type           CouponType
+  value          Decimal    @db.Decimal(10, 2)
+  minOrderAmount Decimal?   @db.Decimal(10, 2)
+  maxUses        Int?
+  usedCount      Int        @default(0)
+  perUserLimit   Int        @default(1)
+  expiresAt      DateTime?
+  isActive       Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  uses CouponUse[]
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED
+}
+
+model CouponUse {
+  id        Int      @id @default(autoincrement())
+  usedAt    DateTime @default(now())
+
+  coupon    Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  couponId  Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   Int @unique
+
+  @@index([couponId])
+  @@index([userId])
+  @@index([couponId, userId])
+}
+
+model Wishlist {
+  id        Int           @id @default(autoincrement())
+  createdAt DateTime      @default(now())
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int           @unique
+
+  items     WishlistItem[]
+}
+
+model WishlistItem {
+  id      Int      @id @default(autoincrement())
+  addedAt DateTime @default(now())
+
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  wishlistId Int
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  Int
+
+  @@unique([wishlistId, productId])
 }

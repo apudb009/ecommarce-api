@@ -17,7 +17,9 @@ import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/constants';
 import { Role } from 'src/generated/prisma/enums';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth('access-token')
 @Controller('api/orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
@@ -32,13 +34,23 @@ export class OrderController {
     return this.orderService.create(req.user.sub, createOrderDto);
   }
 
-  // GET /api/orders — my orders
-  @Get()
+  // GET /api/orders/me — my orders
+  @Get('me')
   myOrders(
     @Query() filterDto: FilterOrderDto,
     @Request() req: { user: { sub: number } },
   ) {
     return this.orderService.getMyOrders(req.user.sub, filterDto);
+  }
+
+  // GET /api/orders/:id (admin only)
+  @Get(':id')
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: { user: { sub: number; role: Role } },
+  ) {
+    const isAdmin = req.user.role === Role.ADMIN;
+    return this.orderService.findOne(+id, req.user.sub, isAdmin);
   }
 
   // GET /api/orders/admin/all — must be before :id
@@ -47,16 +59,6 @@ export class OrderController {
   @Get('/admin/all')
   findAll(@Query() filterDto: FilterOrderDto) {
     return this.orderService.findAll(filterDto);
-  }
-
-  // GET /api/orders/:id
-  @Get(':id')
-  findOne(
-    @Param('id', ParseIntPipe) id: number,
-    @Request() req: { user: { sub: number; role: Role } },
-  ) {
-    const isAdmin = req.user.role === Role.ADMIN;
-    return this.orderService.findOne(+id, req.user.sub, isAdmin);
   }
 
   // PATCH /api/orders/:id/cancel

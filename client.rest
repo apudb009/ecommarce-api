@@ -14,9 +14,23 @@ POST http://localhost:3002/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "customer1@test.com",
+  "email": "customer@test.com",
   "password": "Password@123"
 }
+
+### Coupons
+POST http://localhost:3002/api/coupons/validate
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoiY3VzdG9tZXJAdGVzdC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3ODMzMjAyNDUsImV4cCI6MTc4MzMyMTE0NX0.QE8rS1gGw9od_IzzOeCs-Vb_QEDbPRfpY-BN3WkEFoQ
+Content-Type: application/json
+
+{
+  "code": "SAVE12",
+  "orderAmount": 100
+}
+
+###  Banners
+DELETE http://localhost:3002/api/banners/4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImVtYWlsIjoiY3VzdG9tZXJAdGVzdC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3ODI5OTgzMzAsImV4cCI6MTc4Mjk5OTIzMH0.j9ZOcAxpSXvZjVzENzVveupVO0Ab_TVxKptm-jLytho
 
 ### Add Address
 POST http://localhost:3002/api/user/addresses
@@ -155,7 +169,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsI
 
 ### 5. View Single Order
 GET http://localhost:3002/api/orders/2
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyNDcwMjEyLCJleHAiOjE3ODI0NzExMTJ9.wJ6tBWn4wCkKKqlBipK2P2KnfWq0KrfDE9wp52SO-7o
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyODEwNjkzLCJleHAiOjE3ODI4MTE1OTN9.zEZhhG6pm40nHhVfXPJC7lXf6-wpWncXowfwDKYB6-g
 
 ### 6. Cancel Order (only PENDING)
 PATCH http://localhost:3002/api/orders/1/cancel

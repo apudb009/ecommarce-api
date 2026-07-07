@@ -36,5 +36,8 @@ export interface FormattedCart {
   items: FormattedCartItem[];
   totalItems: number;
   totalAmount: number;
+  grandTotal: number;
   updatedAt: Date;
+  discountAmount?: number;
+  couponCode?: string;
 }

@@ -16,6 +16,8 @@ import {
 import { OrderStatus } from 'src/generated/prisma/enums';
 import { FilterOrderDto } from './dto/filter-order.dto';
 import { MailService } from 'src/mail/mail.service';
+import { InvoiceService } from 'src/invoice/invoice.service';
+import { CouponService } from 'src/coupon/coupon.service';
 
 @Injectable()
 export class OrderService {
@@ -25,6 +27,8 @@ export class OrderService {
     private product: ProductService,
     private address: AddressService,
     private mail: MailService,
+    private invoice: InvoiceService,
+    private coupon: CouponService,
   ) {}
 
   // ── PLACE ORDER FROM CART ──────────────────────────
@@ -38,6 +42,20 @@ export class OrderService {
     //Check address
     await this.address.findOne(createOrderDto.addressId, userId);
 
+    // ── validate coupon if provided ──────────────────
+    let discountAmount = 0;
+    let finalAmount = cart.totalAmount;
+
+    if (createOrderDto.couponCode) {
+      const couponResult = await this.coupon.validate(
+        createOrderDto.couponCode,
+        userId,
+        cart.totalAmount,
+      );
+      discountAmount = couponResult.discount;
+      finalAmount = couponResult.finalAmount;
+    }
+
     //Check each product for stock and active
     for (const item of cart.items) {
       const product = await this.product.findOne(item.productId);
@@ -50,13 +68,16 @@ export class OrderService {
         );
       }
     }
+
     const order = await this.prisma.$transaction(async (tx) => {
       //Create order
       const newOrder = await tx.order.create({
         data: {
           userId,
           addressId: createOrderDto.addressId,
-          totalAmount: cart.totalAmount,
+          totalAmount: finalAmount, // ← discounted amount
+          discountAmount: discountAmount > 0 ? discountAmount : undefined,
+          couponCode: createOrderDto.couponCode,
           notes: createOrderDto.notes,
           status: OrderStatus.PENDING,
           items: {
@@ -87,6 +108,13 @@ export class OrderService {
 
       return newOrder;
     });
+
+    // ── mark coupon as used ───────────────────────────
+    if (createOrderDto.couponCode) {
+      await this.coupon.markAsUsed(createOrderDto.couponCode, userId, order.id);
+    }
+
+    //console.log(order);
 
     //Clear cart
     await this.cart.clearCart(userId);
@@ -124,6 +152,9 @@ export class OrderService {
       })
       .catch(() => {});
 
+    // auto-create invoice after order
+    await this.invoice.createFromOrder(order.id, userId);
+
     return order;
   }
 
@@ -149,7 +180,7 @@ export class OrderService {
     ]);
 
     return {
-      orders,
+      data: orders,
       meta: {
         total,
         page,
@@ -166,12 +197,12 @@ export class OrderService {
     const order = await this.prisma.order.findFirst({
       where: {
         id,
-        userId,
+        userId: isAdmin ? undefined : userId,
       },
       include: this.getIncludes(),
     });
     if (!order) {
-      throw new NotFoundException('Order not found');
+      throw new NotFoundException('Order not found tt');
     }
 
     if (!isAdmin && order.userId !== userId) {
@@ -253,7 +284,7 @@ export class OrderService {
     ]);
 
     return {
-      orders,
+      data: orders,
       meta: {
         total,
         page,
@@ -331,6 +362,15 @@ export class OrderService {
     return updatedOrder;
   }
 
+  async getOrderCountByUserAddress(addressId: number) {
+    const count = await this.prisma.order.count({
+      where: {
+        addressId,
+      },
+    });
+    return count;
+  }
+
   // ── Helper methods ─────────────────────────────
   private getIncludes() {
     return {
@@ -346,6 +386,13 @@ export class OrderService {
       },
       address: true,
       payment: true,
+      user: {
+        select: {
+          email: true,
+          name: true,
+          username: true,
+        },
+      },
     };
   }
 

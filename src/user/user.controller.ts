@@ -17,7 +17,10 @@ import { CreateAddressDto } from 'src/address/dto/create-address.dto';
 import { AddressService } from 'src/address/address.service';
 import { UpdateAddressDto } from 'src/address/dto/update-address.dto';
 import { Public } from 'src/auth/constants';
+import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth('access-token')
 @Controller('api/user')
 export class UserController {
   constructor(
@@ -43,9 +46,31 @@ export class UserController {
     return this.userService.findOne(req.user.sub);
   }
 
+  @Patch('me')
+  updateProfile(
+    @Body() dto: UpdateUserDto,
+    @Request() req: { user: { sub: number } },
+  ) {
+    return this.userService.update(req.user.sub, dto);
+  }
+
+  @Patch('me/password')
+  updatePassword(
+    @Request() req: { user: { sub: number } },
+    @Body() dto: UpdateUserPasswordDto,
+  ) {
+    return this.userService.updatePassword(req.user.sub, dto);
+  }
+
   @Get('addresses')
   findAllAddress(@Request() req: { user: { sub: number } }) {
     return this.address.findAll(req.user.sub);
+  }
+
+  @Public()
+  @Get('search')
+  search(@Query('email') email: string) {
+    return this.userService.getUserByEmail(email);
   }
 
   @Get(':id')
@@ -103,11 +128,5 @@ export class UserController {
     @Request() req: { user: { sub: number } },
   ) {
     return this.address.remove(id, req.user.sub);
-  }
-
-  @Public()
-  @Get('search')
-  search(@Query('email') email: string) {
-    return this.userService.getUserByEmail(email);
   }
 }

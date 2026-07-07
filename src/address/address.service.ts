@@ -93,6 +93,18 @@ export class AddressService {
   // ── DELETE ────────────────────────────────────────
   async remove(id: number, userId: number) {
     await this.getAddressOrThrow(id, userId);
+    //check if address has any orders associated with it
+    const orderCount = await this.prisma.order.count({
+      where: {
+        addressId: id,
+      },
+    });
+
+    if (orderCount > 0) {
+      throw new ForbiddenException(
+        'Cannot delete address with associated orders',
+      );
+    }
     return await this.prisma.address.delete({ where: { id } });
   }
 

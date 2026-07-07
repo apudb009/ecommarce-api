@@ -7,13 +7,17 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Public, Roles } from 'src/auth/constants';
 import { RolesGuard } from 'src/auth/roles.guard';
+import { FilterProductDto } from 'src/product/dto/filter-product.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth('access-token')
 @Controller('api/categories')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
@@ -36,8 +40,11 @@ export class CategoryController {
   // GET /api/categories/:slug (public)
   @Public()
   @Get(':slug')
-  findOneBySlug(@Param('slug') slug: string) {
-    return this.categoryService.findOneBySlug(slug);
+  findOneBySlug(
+    @Param('slug') slug: string,
+    @Query() filterDto: FilterProductDto,
+  ) {
+    return this.categoryService.findOneBySlug(slug, filterDto);
   }
 
   // PATCH /api/categories/:id (admin only)

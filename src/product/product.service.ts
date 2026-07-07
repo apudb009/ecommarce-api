@@ -8,13 +8,14 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from 'src/prisma.service';
 import { CategoryService } from 'src/category/category.service';
 import { FilterProductDto } from './dto/filter-product.dto';
-import { ProductWhereInput } from 'src/generated/prisma/models/Product';
+import { ProductHelper } from 'src/common/helpers/product.helper';
 
 @Injectable()
 export class ProductService {
   constructor(
     private prisma: PrismaService,
     private category: CategoryService,
+    private helper: ProductHelper,
   ) {}
 
   // ── CREATE ─────────────────────────────────────────
@@ -46,78 +47,9 @@ export class ProductService {
 
   // ── GET ALL (with search, filter, pagination) ──────
   async findAll(fiterDto: FilterProductDto) {
-    const {
-      page = 1,
-      limit = 12,
-      search,
-      minPrice,
-      maxPrice,
-      inStock,
-      sortBy = 'createdAt',
-      sortOrder = 'desc',
-      categoryId,
-    } = fiterDto;
+    const productsWithMeta = await this.helper.getAllProductsWithMeta(fiterDto);
 
-    const skip = (page - 1) * limit;
-
-    const where: ProductWhereInput = {
-      ...(search && {
-        OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } },
-        ],
-      }),
-      ...(minPrice && { price: { gte: minPrice } }),
-      ...(maxPrice && { price: { lte: maxPrice } }),
-      ...(inStock && { stock: { gt: 0 } }),
-      ...(categoryId && { categoryId }),
-    };
-
-    const [products, total] = await Promise.all([
-      this.prisma.product.findMany({
-        where,
-        take: limit,
-        skip,
-        orderBy: {
-          [sortBy]: sortOrder,
-        },
-        include: {
-          category: { select: { id: true, name: true, slug: true } },
-          _count: {
-            select: {
-              reviews: true,
-            },
-          },
-        },
-      }),
-      this.prisma.product.count({
-        where,
-      }),
-    ]);
-
-    // calculate average rating for each product
-    const productsWithAvgRating = await Promise.all(
-      products.map(async (product) => {
-        const avgRating = await this.prisma.review.aggregate({
-          _avg: { rating: true },
-          where: { productId: product.id },
-        });
-        return {
-          ...product,
-          avgRating: avgRating._avg.rating,
-        };
-      }),
-    );
-
-    return {
-      products: productsWithAvgRating,
-      total,
-      page,
-      limit,
-      lastPage: Math.ceil(total / limit),
-      hasNextPage: page < Math.ceil(total / limit),
-      hasPrevPage: page > 1,
-    };
+    return productsWithMeta;
   }
 
   // ── GET ONE BY SLUG ────────────────────────────────
@@ -191,6 +123,8 @@ export class ProductService {
     if (dto.categoryId) {
       await this.category.findOne(dto.categoryId);
     }
+
+    console.log(dto);
     return await this.prisma.product.update({
       where: {
         id,
@@ -235,5 +169,61 @@ export class ProductService {
         },
       },
     });
+  }
+
+  // ── HOT PRODUCTS (newest + high rated) ────────────
+  async getHotProducts(limit = 10) {
+    const products = await this.prisma.product.findMany({
+      where: { isActive: true, stock: { gt: 0 } },
+      take: limit,
+      include: {
+        category: { select: { id: true, name: true, slug: true } },
+        _count: { select: { reviews: true } },
+      },
+      orderBy: { createdAt: 'desc' }, // newest first
+    });
+
+    return await this.helper.withAvgRating(products);
+  }
+
+  // ── BEST SELLERS (most ordered) ────────────────────
+  async getBestSellers(limit = 10) {
+    // get product ids ordered by how many times they appear in orders
+    const bestSellers = await this.prisma.orderItem.groupBy({
+      by: ['productId'],
+      _sum: {
+        quantity: true,
+      },
+      orderBy: {
+        _sum: {
+          quantity: 'desc',
+        },
+      },
+      take: limit,
+    });
+
+    if (bestSellers.length === 0) {
+      return await this.getHotProducts(limit);
+    }
+
+    const productIds = bestSellers.map((item) => item.productId);
+
+    const products = await this.prisma.product.findMany({
+      where: {
+        id: { in: productIds },
+        isActive: true,
+        stock: { gt: 0 },
+      },
+      include: {
+        category: { select: { id: true, name: true, slug: true } },
+        _count: { select: { reviews: true } },
+      },
+    });
+
+    const sorted = productIds
+      .map((id) => products.find((p) => p.id === id))
+      .filter(Boolean);
+
+    return await this.helper.withAvgRating(sorted as typeof products);
   }
 }

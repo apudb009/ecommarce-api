@@ -137,7 +137,7 @@ export class ReviewService {
     });
 
     return {
-      reviews,
+      data: reviews,
       summary: {
         totalReviews: total,
         averageRating: avgRating._avg.rating

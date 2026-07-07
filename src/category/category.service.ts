@@ -6,10 +6,15 @@ import {
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from 'src/prisma.service';
+import { FilterProductDto } from 'src/product/dto/filter-product.dto';
+import { ProductHelper } from 'src/common/helpers/product.helper';
 
 @Injectable()
 export class CategoryService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private helper: ProductHelper,
+  ) {}
 
   // ── CREATE ─────────────────────────────────────────
   async create(createCategoryDto: CreateCategoryDto) {
@@ -45,25 +50,12 @@ export class CategoryService {
   }
 
   // ── GET ONE BY SLUG ────────────────────────────────
-  async findOneBySlug(slug: string) {
+  async findOneBySlug(slug: string, filterDto: FilterProductDto) {
     const category = await this.prisma.category.findFirst({
       where: {
         slug,
       },
       include: {
-        products: {
-          where: {
-            isActive: true,
-          },
-          include: {
-            _count: {
-              select: {
-                reviews: true,
-              },
-            },
-          },
-          take: 20,
-        },
         _count: {
           select: {
             products: true,
@@ -75,7 +67,14 @@ export class CategoryService {
     if (!category) {
       throw new NotFoundException('Category not found');
     }
-    return category;
+
+    filterDto.categoryId = category.id;
+
+    const products = await this.helper.getAllProductsWithMeta(filterDto);
+    return {
+      data: category,
+      products,
+    };
   }
 
   // ── GET ONE BY ID ──────────────────────────────────

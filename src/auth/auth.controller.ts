@@ -4,7 +4,9 @@ import { AuthService } from './auth.service';
 import { Public } from './constants';
 import { LoginDto } from './dto/login.dto';
 import { RefreshGuard } from './refresh.guard';
+import { Throttle } from '@nestjs/throttler';
 
+@Throttle({ short: { ttl: 60000, limit: 5 } }) // 5 attempts per minute
 @Controller('api/auth')
 export class AuthController {
   constructor(private authService: AuthService) {}

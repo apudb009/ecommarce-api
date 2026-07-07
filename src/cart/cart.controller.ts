@@ -12,7 +12,10 @@ import {
 import { CartService } from './cart.service';
 import { CreateCartDto } from './dto/add-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
+import { AddCouponToCartDto } from './dto/add-coupon-to-cart.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth('access-token')
 @Controller('api/cart')
 export class CartController {
   constructor(private readonly cartService: CartService) {}
@@ -30,6 +33,21 @@ export class CartController {
     @Body() dto: CreateCartDto,
   ) {
     return this.cartService.addItem(req.user.sub, dto);
+  }
+
+  // PATCH /api/cart/apply-coupon
+  @Patch('apply-coupon')
+  applyCoupon(
+    @Body() dto: AddCouponToCartDto,
+    @Request() req: { user: { sub: number } },
+  ) {
+    return this.cartService.applyCoupon(dto, req.user.sub);
+  }
+
+  // PATCH /api/cart/remove-coupon
+  @Patch('remove-coupon')
+  removeCoupon(@Request() req: { user: { sub: number } }) {
+    return this.cartService.removeCoupon(req.user.sub);
   }
 
   // PATCH /api/cart/items/:productId

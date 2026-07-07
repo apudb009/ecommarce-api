@@ -6,6 +6,10 @@ export class CreateOrderDto {
   @Type(() => Number)
   addressId!: number;
 
+  @IsString()
+  @IsOptional()
+  couponCode?: string;
+
   @IsOptional()
   @IsString()
   notes?: string;
