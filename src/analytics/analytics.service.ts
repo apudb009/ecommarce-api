@@ -243,4 +243,19 @@ export class AnalyticsService {
       },
     });
   }
+
+  // ── Most rated products ─────────────────────────────────
+  async getMostRatedProducts(limit = 5) {
+    const products = await this.prisma.product.findMany({
+      where: { isActive: true, stock: { gt: 0 } },
+      take: limit,
+      select: {
+        name: true,
+        _count: { select: { reviews: true } },
+      },
+      // Order by relation count using relation name
+      orderBy: { reviews: { _count: 'desc' } },
+    });
+    return products.map((p) => ({ ...p, count: p._count.reviews }));
+  }
 }

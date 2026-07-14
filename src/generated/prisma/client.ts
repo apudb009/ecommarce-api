@@ -119,3 +119,38 @@ export type Wishlist = Prisma.WishlistModel
  * 
  */
 export type WishlistItem = Prisma.WishlistItemModel
+/**
+ * Model Newsletter
+ * 
+ */
+export type Newsletter = Prisma.NewsletterModel
+/**
+ * Model Notification
+ * 
+ */
+export type Notification = Prisma.NotificationModel
+/**
+ * Model Tax
+ * 
+ */
+export type Tax = Prisma.TaxModel
+/**
+ * Model Shipping
+ * 
+ */
+export type Shipping = Prisma.ShippingModel
+/**
+ * Model ProductImage
+ * 
+ */
+export type ProductImage = Prisma.ProductImageModel
+/**
+ * Model ReturnRequest
+ * 
+ */
+export type ReturnRequest = Prisma.ReturnRequestModel
+/**
+ * Model ProductVariant
+ * 
+ */
+export type ProductVariant = Prisma.ProductVariantModel

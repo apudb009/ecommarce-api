@@ -17,6 +17,7 @@ import { RolesGuard } from 'src/auth/roles.guard';
 import { Public, Roles } from 'src/auth/constants';
 import { FilterProductDto } from './dto/filter-product.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { CreateVariantDto } from './dto/create-variant.dto';
 
 @ApiBearerAuth('access-token')
 @Controller('api/products')
@@ -52,6 +53,52 @@ export class ProductController {
     return this.productService.getBestSellers();
   }
 
+  // product.controller.ts — add variant routes BEFORE :slug
+
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  @Post(':id/variants')
+  addVariant(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: CreateVariantDto,
+  ) {
+    return this.productService.addVariant(id, dto);
+  }
+
+  @Get(':id/variants')
+  @Public()
+  getVariants(@Param('id', ParseIntPipe) id: number) {
+    return this.productService.getVariants(id);
+  }
+
+  // POST /api/products/variants/getSku (admin only)
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  @Post('variants/getSku')
+  getUniqueSku(@Body() body: { productName: string; variantValues: string[] }) {
+    return this.productService.generateUniqueSku(
+      body.productName,
+      body.variantValues,
+    );
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  @Patch('variants/:variantId')
+  updateVariant(
+    @Param('variantId', ParseIntPipe) variantId: number,
+    @Body() dto: Partial<CreateVariantDto>,
+  ) {
+    return this.productService.updateVariant(variantId, dto);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  @Delete('variants/:variantId')
+  deleteVariant(@Param('variantId', ParseIntPipe) variantId: number) {
+    return this.productService.removeVariant(variantId);
+  }
+
   // GET /api/products/:slug (public) — must be before :id
   @Public()
   @Get(':slug')
@@ -81,6 +128,17 @@ export class ProductController {
     @Body() updateProductDto: UpdateProductDto,
   ) {
     return this.productService.update(id, updateProductDto);
+  }
+
+  // PATCH /api/products/:id/main-image (admin only)
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  @Patch(':id/main-image')
+  updateMainImage(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('imageId', ParseIntPipe) imageId: number,
+  ) {
+    return this.productService.setMainImage(id, imageId);
   }
 
   // DELETE /api/products/:id (admin only)

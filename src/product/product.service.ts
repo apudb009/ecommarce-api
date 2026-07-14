@@ -9,6 +9,8 @@ import { PrismaService } from 'src/prisma.service';
 import { CategoryService } from 'src/category/category.service';
 import { FilterProductDto } from './dto/filter-product.dto';
 import { ProductHelper } from 'src/common/helpers/product.helper';
+import { ProductImageService } from 'src/product_image/product_image.service';
+import { CreateVariantDto } from './dto/create-variant.dto';
 
 @Injectable()
 export class ProductService {
@@ -16,6 +18,7 @@ export class ProductService {
     private prisma: PrismaService,
     private category: CategoryService,
     private helper: ProductHelper,
+    private productImage: ProductImageService,
   ) {}
 
   // ── CREATE ─────────────────────────────────────────
@@ -33,15 +36,31 @@ export class ProductService {
     if (productSlugExist) {
       throw new ConflictException('Product already exist');
     }
-    return await this.prisma.product.create({
-      data: {
-        ...dto,
-        images: dto.images ?? [],
-        isActive: dto.isActive ?? true,
-      },
-      include: {
-        category: { select: { id: true, name: true, slug: true } },
-      },
+    const { images, ...productData } = dto;
+
+    return await this.prisma.$transaction(async (tx) => {
+      const product = await tx.product.create({
+        data: {
+          ...productData,
+          isActive: dto.isActive ?? true,
+        },
+      });
+      if (images) {
+        await this.productImage.addImages(
+          {
+            productId: product.id,
+            url: images,
+          },
+          tx,
+        );
+      }
+      return await tx.product.findUnique({
+        where: { id: product.id },
+        include: {
+          category: { select: { id: true, name: true, slug: true } },
+          images: { select: { url: true, id: true, isMain: true } },
+        },
+      });
     });
   }
 
@@ -60,6 +79,7 @@ export class ProductService {
       },
       include: {
         category: { select: { id: true, name: true, slug: true } },
+        images: { select: { url: true, id: true, isMain: true } },
         reviews: {
           include: {
             user: { select: { id: true, email: true, name: true } },
@@ -106,6 +126,10 @@ export class ProductService {
       where: {
         id,
       },
+      include: {
+        category: { select: { id: true, name: true, slug: true } },
+        images: { select: { url: true, id: true, isMain: true } },
+      },
     });
 
     if (!product) {
@@ -124,16 +148,38 @@ export class ProductService {
       await this.category.findOne(dto.categoryId);
     }
 
-    console.log(dto);
-    return await this.prisma.product.update({
-      where: {
-        id,
-      },
-      data: dto,
-      include: {
-        category: { select: { id: true, name: true, slug: true } },
-      },
+    const { images, ...productData } = dto;
+
+    return await this.prisma.$transaction(async (tx) => {
+      const product = await tx.product.update({
+        where: {
+          id,
+        },
+        data: productData,
+      });
+      if (images) {
+        await this.productImage.updateImages(
+          {
+            productId: product.id,
+            url: images,
+          },
+          tx,
+        );
+      }
+      return await tx.product.findUnique({
+        where: { id: product.id },
+        include: {
+          category: { select: { id: true, name: true, slug: true } },
+          images: { select: { url: true, id: true, isMain: true } },
+        },
+      });
     });
+  }
+
+  // ── SET MAIN IMAGE ─────────────────────────────────────
+  async setMainImage(id: number, imageId: number) {
+    await this.productImage.setMainImage(imageId, id);
+    return await this.findOne(id);
   }
 
   // ── DELETE ─────────────────────────────────────────
@@ -141,10 +187,13 @@ export class ProductService {
     //Check product existance
     await this.findOne(id);
 
-    return await this.prisma.product.delete({
-      where: {
-        id,
-      },
+    return await this.prisma.$transaction(async (tx) => {
+      await tx.product.delete({
+        where: {
+          id,
+        },
+      });
+      await this.productImage.deleteImages(id, tx);
     });
   }
 
@@ -178,6 +227,7 @@ export class ProductService {
       take: limit,
       include: {
         category: { select: { id: true, name: true, slug: true } },
+        images: { select: { url: true, id: true, isMain: true } },
         _count: { select: { reviews: true } },
       },
       orderBy: { createdAt: 'desc' }, // newest first
@@ -216,6 +266,7 @@ export class ProductService {
       },
       include: {
         category: { select: { id: true, name: true, slug: true } },
+        images: { select: { url: true, id: true, isMain: true } },
         _count: { select: { reviews: true } },
       },
     });
@@ -225,5 +276,91 @@ export class ProductService {
       .filter(Boolean);
 
     return await this.helper.withAvgRating(sorted as typeof products);
+  }
+
+  // ── ADD VARIANT ────────────────────────────────────
+  async addVariant(id: number, variant: CreateVariantDto) {
+    await this.findOne(id);
+    return await this.prisma.productVariant.create({
+      data: {
+        productId: id,
+        ...variant,
+      },
+    });
+  }
+
+  // ── UPDATE VARIANT ─────────────────────────────────
+  async updateVariant(id: number, variantDto: Partial<CreateVariantDto>) {
+    const variant = await this.prisma.productVariant.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!variant) {
+      throw new NotFoundException('Variant not found');
+    }
+
+    return await this.prisma.productVariant.update({
+      where: {
+        id,
+      },
+      data: {
+        ...variantDto,
+      },
+    });
+  }
+
+  // ── DELETE VARIANT ─────────────────────────────────
+  async removeVariant(id: number) {
+    return await this.prisma.productVariant.delete({
+      where: {
+        id,
+      },
+    });
+  }
+
+  // ── GET VARIANTS ───────────────────────────────────
+  async getVariants(id: number) {
+    await this.findOne(id);
+    return await this.prisma.productVariant.findMany({
+      where: {
+        productId: id,
+      },
+      orderBy: {
+        id: 'asc',
+      },
+    });
+  }
+
+  // ── generate Unique SKU ───────────────────────────────
+  async generateUniqueSku(productName: string, variantValues: string[]) {
+    const baseSku = this.generateSku(productName, variantValues);
+
+    let sku = baseSku;
+    let counter = 2;
+
+    while (
+      await this.prisma.productVariant.findUnique({
+        where: { sku },
+      })
+    ) {
+      sku = `${baseSku}-${counter}`;
+      counter++;
+    }
+
+    return sku;
+  }
+
+  // ── Helpers ───────────────────────────────
+  private generateSku(productName: string, variantValues: string[]) {
+    const slug = (text: string) =>
+      text
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+
+    return [slug(productName), ...variantValues.map(slug)].join('-');
   }
 }

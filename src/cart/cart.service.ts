@@ -15,6 +15,10 @@ import {
 } from './entities/cart.entity';
 import { AddCouponToCartDto } from './dto/add-coupon-to-cart.dto';
 import { CouponService } from 'src/coupon/coupon.service';
+import { TaxService } from 'src/tax/tax.service';
+import { TaxType } from 'src/generated/prisma/enums';
+import { ShippingService } from 'src/shipping/shipping.service';
+import { ProductVariant } from 'src/generated/prisma/client';
 
 @Injectable()
 export class CartService {
@@ -22,6 +26,8 @@ export class CartService {
     private prisma: PrismaService,
     private product: ProductService,
     private coupon: CouponService,
+    private tax: TaxService,
+    private shipping: ShippingService,
   ) {}
 
   // ── GET OR CREATE CART ─────────────────────────────
@@ -41,7 +47,7 @@ export class CartService {
         include: this.getCartInclude(),
       });
     }
-    return this.formatCart(cart);
+    return await this.formatCart(cart);
   }
 
   // ── ADD ITEM ───────────────────────────────────────
@@ -55,6 +61,31 @@ export class CartService {
 
     if (!product.isActive) {
       throw new NotFoundException('Product is inactive');
+    }
+
+    // ── validate variant if provided ──────────────
+    let variant: ProductVariant | null;
+
+    if (dto.variantId) {
+      variant = await this.prisma.productVariant.findUnique({
+        where: {
+          id: dto.variantId,
+        },
+      });
+
+      if (!variant || variant.productId !== dto.productId) {
+        throw new BadRequestException('Invalid variant');
+      }
+
+      if (!variant.isActive) {
+        throw new BadRequestException('Variant is inactive');
+      }
+
+      if (variant.stock < dto.quantity) {
+        throw new BadRequestException(
+          `Only ${variant.stock} items available in stock`,
+        );
+      }
     }
 
     if (product.stock < dto.quantity) {
@@ -114,6 +145,7 @@ export class CartService {
       // add cart-item
       await this.prisma.cartItem.create({
         data: {
+          variantId: dto.variantId,
           cartId: cart.id,
           productId: dto.productId,
           quantity: dto.quantity,
@@ -334,7 +366,7 @@ export class CartService {
       include: this.getCartInclude(),
     });
 
-    return this.formatCart(updatedCart as CartWithItems);
+    return await this.formatCart(updatedCart as CartWithItems);
   }
   private getCartInclude() {
     return {
@@ -356,6 +388,7 @@ export class CartService {
               },
             },
           },
+          variant: true,
         },
         orderBy: {
           id: 'asc' as const,
@@ -365,7 +398,7 @@ export class CartService {
   }
 
   // ── HELPER — calculate totals ──────────────────────
-  private formatCart(cart: CartWithItems): FormattedCart {
+  private async formatCart(cart: CartWithItems): Promise<FormattedCart> {
     const items: FormattedCartItem[] = cart.items.map(
       (item: CartItemWithProduct) => {
         return {
@@ -385,15 +418,34 @@ export class CartService {
       0,
     );
 
+    //Get Active tax
+    const tax = await this.tax.getActive();
+    const taxAmount =
+      tax?.type === TaxType.FIXED
+        ? Number(tax?.rate ?? 0)
+        : (totalAmount * Number(tax?.rate ?? 0)) / 100;
+
+    // Get Active shipping
+    const shipping = await this.shipping.getActive();
+    const shippingAmount = Number(shipping?.price ?? 0);
+
+    //Calculate grand total
+    const grandTotal =
+      (cart.discountAmount
+        ? totalAmount - Number(cart.discountAmount)
+        : totalAmount) +
+      taxAmount +
+      shippingAmount;
+
     return {
       id: cart.id,
       userId: cart.userId,
       items,
       totalItems: totalQuantity,
       totalAmount,
-      grandTotal: cart.discountAmount
-        ? totalAmount - Number(cart.discountAmount)
-        : totalAmount,
+      taxAmount,
+      grandTotal,
+      shippingAmount,
       discountAmount: cart.discountAmount ? Number(cart.discountAmount) : 0,
       couponCode: cart.couponCode ? cart.couponCode : '',
       updatedAt: cart.updatedAt,

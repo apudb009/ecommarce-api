@@ -8,7 +8,11 @@ import { OrderService } from 'src/order/order.service';
 import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
 import { CreatePaymentIntentDto } from './dto/create-payment-intent.dto';
-import { OrderStatus, PaymentStatus } from 'src/generated/prisma/enums';
+import {
+  InvoiceStatus,
+  OrderStatus,
+  PaymentStatus,
+} from 'src/generated/prisma/enums';
 
 @Injectable()
 export class PaymentService {
@@ -61,7 +65,7 @@ export class PaymentService {
     }
 
     // 4. convert to cents (Stripe uses smallest currency unit)
-    const amount = Math.round(Number(order.totalAmount) * 100);
+    const amount = Number(order.totalAmount);
 
     // 5. create Stripe PaymentIntent
     const paymentIntent = await this.stripe.paymentIntents.create({
@@ -152,6 +156,12 @@ export class PaymentService {
         status: OrderStatus.PAID,
         stripePaymentId: paymentIntent.id,
       },
+    });
+
+    //update invoice to PAID
+    await this.prisma.invoice.update({
+      where: { orderId: payment.orderId },
+      data: { status: InvoiceStatus.PAID },
     });
   }
 

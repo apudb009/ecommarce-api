@@ -53,4 +53,9 @@ export class AnalyticsController {
   getRecentOrders() {
     return this.analyticsService.getRecentOrders();
   }
+
+  @Get('most-rated')
+  getMostRated() {
+    return this.analyticsService.getMostRatedProducts();
+  }
 }

@@ -255,6 +255,8 @@ export type UserWhereInput = {
   invoices?: Prisma.InvoiceListRelationFilter
   couponUses?: Prisma.CouponUseListRelationFilter
   wishlist?: Prisma.XOR<Prisma.WishlistNullableScalarRelationFilter, Prisma.WishlistWhereInput> | null
+  notifications?: Prisma.NotificationListRelationFilter
+  returnRequests?: Prisma.ReturnRequestListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -274,6 +276,8 @@ export type UserOrderByWithRelationInput = {
   invoices?: Prisma.InvoiceOrderByRelationAggregateInput
   couponUses?: Prisma.CouponUseOrderByRelationAggregateInput
   wishlist?: Prisma.WishlistOrderByWithRelationInput
+  notifications?: Prisma.NotificationOrderByRelationAggregateInput
+  returnRequests?: Prisma.ReturnRequestOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -296,6 +300,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   invoices?: Prisma.InvoiceListRelationFilter
   couponUses?: Prisma.CouponUseListRelationFilter
   wishlist?: Prisma.XOR<Prisma.WishlistNullableScalarRelationFilter, Prisma.WishlistWhereInput> | null
+  notifications?: Prisma.NotificationListRelationFilter
+  returnRequests?: Prisma.ReturnRequestListRelationFilter
 }, "id" | "email" | "username">
 
 export type UserOrderByWithAggregationInput = {
@@ -346,6 +352,8 @@ export type UserCreateInput = {
   invoices?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   couponUses?: Prisma.CouponUseCreateNestedManyWithoutUserInput
   wishlist?: Prisma.WishlistCreateNestedOneWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -365,6 +373,8 @@ export type UserUncheckedCreateInput = {
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   couponUses?: Prisma.CouponUseUncheckedCreateNestedManyWithoutUserInput
   wishlist?: Prisma.WishlistUncheckedCreateNestedOneWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -383,6 +393,8 @@ export type UserUpdateInput = {
   invoices?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   couponUses?: Prisma.CouponUseUpdateManyWithoutUserNestedInput
   wishlist?: Prisma.WishlistUpdateOneWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -402,6 +414,8 @@ export type UserUncheckedUpdateInput = {
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   couponUses?: Prisma.CouponUseUncheckedUpdateManyWithoutUserNestedInput
   wishlist?: Prisma.WishlistUncheckedUpdateOneWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -610,6 +624,34 @@ export type UserUpdateOneRequiredWithoutWishlistNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutWishlistInput, Prisma.UserUpdateWithoutWishlistInput>, Prisma.UserUncheckedUpdateWithoutWishlistInput>
 }
 
+export type UserCreateNestedOneWithoutNotificationsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutNotificationsInput, Prisma.UserUncheckedCreateWithoutNotificationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutNotificationsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutNotificationsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutNotificationsInput, Prisma.UserUncheckedCreateWithoutNotificationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutNotificationsInput
+  upsert?: Prisma.UserUpsertWithoutNotificationsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutNotificationsInput, Prisma.UserUpdateWithoutNotificationsInput>, Prisma.UserUncheckedUpdateWithoutNotificationsInput>
+}
+
+export type UserCreateNestedOneWithoutReturnRequestsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReturnRequestsInput, Prisma.UserUncheckedCreateWithoutReturnRequestsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReturnRequestsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutReturnRequestsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutReturnRequestsInput, Prisma.UserUncheckedCreateWithoutReturnRequestsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutReturnRequestsInput
+  upsert?: Prisma.UserUpsertWithoutReturnRequestsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutReturnRequestsInput, Prisma.UserUpdateWithoutReturnRequestsInput>, Prisma.UserUncheckedUpdateWithoutReturnRequestsInput>
+}
+
 export type UserCreateWithoutAddressesInput = {
   email: string
   username: string
@@ -625,6 +667,8 @@ export type UserCreateWithoutAddressesInput = {
   invoices?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   couponUses?: Prisma.CouponUseCreateNestedManyWithoutUserInput
   wishlist?: Prisma.WishlistCreateNestedOneWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAddressesInput = {
@@ -643,6 +687,8 @@ export type UserUncheckedCreateWithoutAddressesInput = {
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   couponUses?: Prisma.CouponUseUncheckedCreateNestedManyWithoutUserInput
   wishlist?: Prisma.WishlistUncheckedCreateNestedOneWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAddressesInput = {
@@ -676,6 +722,8 @@ export type UserUpdateWithoutAddressesInput = {
   invoices?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   couponUses?: Prisma.CouponUseUpdateManyWithoutUserNestedInput
   wishlist?: Prisma.WishlistUpdateOneWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAddressesInput = {
@@ -694,6 +742,8 @@ export type UserUncheckedUpdateWithoutAddressesInput = {
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   couponUses?: Prisma.CouponUseUncheckedUpdateManyWithoutUserNestedInput
   wishlist?: Prisma.WishlistUncheckedUpdateOneWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutReviewsInput = {
@@ -711,6 +761,8 @@ export type UserCreateWithoutReviewsInput = {
   invoices?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   couponUses?: Prisma.CouponUseCreateNestedManyWithoutUserInput
   wishlist?: Prisma.WishlistCreateNestedOneWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReviewsInput = {
@@ -729,6 +781,8 @@ export type UserUncheckedCreateWithoutReviewsInput = {
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   couponUses?: Prisma.CouponUseUncheckedCreateNestedManyWithoutUserInput
   wishlist?: Prisma.WishlistUncheckedCreateNestedOneWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReviewsInput = {
@@ -762,6 +816,8 @@ export type UserUpdateWithoutReviewsInput = {
   invoices?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   couponUses?: Prisma.CouponUseUpdateManyWithoutUserNestedInput
   wishlist?: Prisma.WishlistUpdateOneWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReviewsInput = {
@@ -780,6 +836,8 @@ export type UserUncheckedUpdateWithoutReviewsInput = {
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   couponUses?: Prisma.CouponUseUncheckedUpdateManyWithoutUserNestedInput
   wishlist?: Prisma.WishlistUncheckedUpdateOneWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCartInput = {
@@ -797,6 +855,8 @@ export type UserCreateWithoutCartInput = {
   invoices?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   couponUses?: Prisma.CouponUseCreateNestedManyWithoutUserInput
   wishlist?: Prisma.WishlistCreateNestedOneWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCartInput = {
@@ -815,6 +875,8 @@ export type UserUncheckedCreateWithoutCartInput = {
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   couponUses?: Prisma.CouponUseUncheckedCreateNestedManyWithoutUserInput
   wishlist?: Prisma.WishlistUncheckedCreateNestedOneWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCartInput = {
@@ -848,6 +910,8 @@ export type UserUpdateWithoutCartInput = {
   invoices?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   couponUses?: Prisma.CouponUseUpdateManyWithoutUserNestedInput
   wishlist?: Prisma.WishlistUpdateOneWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCartInput = {
@@ -866,6 +930,8 @@ export type UserUncheckedUpdateWithoutCartInput = {
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   couponUses?: Prisma.CouponUseUncheckedUpdateManyWithoutUserNestedInput
   wishlist?: Prisma.WishlistUncheckedUpdateOneWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOrdersInput = {
@@ -883,6 +949,8 @@ export type UserCreateWithoutOrdersInput = {
   invoices?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   couponUses?: Prisma.CouponUseCreateNestedManyWithoutUserInput
   wishlist?: Prisma.WishlistCreateNestedOneWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOrdersInput = {
@@ -901,6 +969,8 @@ export type UserUncheckedCreateWithoutOrdersInput = {
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   couponUses?: Prisma.CouponUseUncheckedCreateNestedManyWithoutUserInput
   wishlist?: Prisma.WishlistUncheckedCreateNestedOneWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOrdersInput = {
@@ -934,6 +1004,8 @@ export type UserUpdateWithoutOrdersInput = {
   invoices?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   couponUses?: Prisma.CouponUseUpdateManyWithoutUserNestedInput
   wishlist?: Prisma.WishlistUpdateOneWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOrdersInput = {
@@ -952,6 +1024,8 @@ export type UserUncheckedUpdateWithoutOrdersInput = {
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   couponUses?: Prisma.CouponUseUncheckedUpdateManyWithoutUserNestedInput
   wishlist?: Prisma.WishlistUncheckedUpdateOneWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutInvoicesInput = {
@@ -969,6 +1043,8 @@ export type UserCreateWithoutInvoicesInput = {
   cart?: Prisma.CartCreateNestedOneWithoutUserInput
   couponUses?: Prisma.CouponUseCreateNestedManyWithoutUserInput
   wishlist?: Prisma.WishlistCreateNestedOneWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutInvoicesInput = {
@@ -987,6 +1063,8 @@ export type UserUncheckedCreateWithoutInvoicesInput = {
   cart?: Prisma.CartUncheckedCreateNestedOneWithoutUserInput
   couponUses?: Prisma.CouponUseUncheckedCreateNestedManyWithoutUserInput
   wishlist?: Prisma.WishlistUncheckedCreateNestedOneWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutInvoicesInput = {
@@ -1020,6 +1098,8 @@ export type UserUpdateWithoutInvoicesInput = {
   cart?: Prisma.CartUpdateOneWithoutUserNestedInput
   couponUses?: Prisma.CouponUseUpdateManyWithoutUserNestedInput
   wishlist?: Prisma.WishlistUpdateOneWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInvoicesInput = {
@@ -1038,6 +1118,8 @@ export type UserUncheckedUpdateWithoutInvoicesInput = {
   cart?: Prisma.CartUncheckedUpdateOneWithoutUserNestedInput
   couponUses?: Prisma.CouponUseUncheckedUpdateManyWithoutUserNestedInput
   wishlist?: Prisma.WishlistUncheckedUpdateOneWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCouponUsesInput = {
@@ -1055,6 +1137,8 @@ export type UserCreateWithoutCouponUsesInput = {
   cart?: Prisma.CartCreateNestedOneWithoutUserInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   wishlist?: Prisma.WishlistCreateNestedOneWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCouponUsesInput = {
@@ -1073,6 +1157,8 @@ export type UserUncheckedCreateWithoutCouponUsesInput = {
   cart?: Prisma.CartUncheckedCreateNestedOneWithoutUserInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   wishlist?: Prisma.WishlistUncheckedCreateNestedOneWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCouponUsesInput = {
@@ -1106,6 +1192,8 @@ export type UserUpdateWithoutCouponUsesInput = {
   cart?: Prisma.CartUpdateOneWithoutUserNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   wishlist?: Prisma.WishlistUpdateOneWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCouponUsesInput = {
@@ -1124,6 +1212,8 @@ export type UserUncheckedUpdateWithoutCouponUsesInput = {
   cart?: Prisma.CartUncheckedUpdateOneWithoutUserNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   wishlist?: Prisma.WishlistUncheckedUpdateOneWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutWishlistInput = {
@@ -1141,6 +1231,8 @@ export type UserCreateWithoutWishlistInput = {
   cart?: Prisma.CartCreateNestedOneWithoutUserInput
   invoices?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   couponUses?: Prisma.CouponUseCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutWishlistInput = {
@@ -1159,6 +1251,8 @@ export type UserUncheckedCreateWithoutWishlistInput = {
   cart?: Prisma.CartUncheckedCreateNestedOneWithoutUserInput
   invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   couponUses?: Prisma.CouponUseUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutWishlistInput = {
@@ -1192,6 +1286,8 @@ export type UserUpdateWithoutWishlistInput = {
   cart?: Prisma.CartUpdateOneWithoutUserNestedInput
   invoices?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   couponUses?: Prisma.CouponUseUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutWishlistInput = {
@@ -1210,6 +1306,196 @@ export type UserUncheckedUpdateWithoutWishlistInput = {
   cart?: Prisma.CartUncheckedUpdateOneWithoutUserNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   couponUses?: Prisma.CouponUseUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutNotificationsInput = {
+  email: string
+  username: string
+  name?: string | null
+  password: string
+  role?: $Enums.Role
+  refreshToken?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  orders?: Prisma.OrderCreateNestedManyWithoutUserInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
+  cart?: Prisma.CartCreateNestedOneWithoutUserInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutUserInput
+  couponUses?: Prisma.CouponUseCreateNestedManyWithoutUserInput
+  wishlist?: Prisma.WishlistCreateNestedOneWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutNotificationsInput = {
+  id?: number
+  email: string
+  username: string
+  name?: string | null
+  password: string
+  role?: $Enums.Role
+  refreshToken?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
+  cart?: Prisma.CartUncheckedCreateNestedOneWithoutUserInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
+  couponUses?: Prisma.CouponUseUncheckedCreateNestedManyWithoutUserInput
+  wishlist?: Prisma.WishlistUncheckedCreateNestedOneWithoutUserInput
+  returnRequests?: Prisma.ReturnRequestUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutNotificationsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutNotificationsInput, Prisma.UserUncheckedCreateWithoutNotificationsInput>
+}
+
+export type UserUpsertWithoutNotificationsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutNotificationsInput, Prisma.UserUncheckedUpdateWithoutNotificationsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutNotificationsInput, Prisma.UserUncheckedCreateWithoutNotificationsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutNotificationsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutNotificationsInput, Prisma.UserUncheckedUpdateWithoutNotificationsInput>
+}
+
+export type UserUpdateWithoutNotificationsInput = {
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  refreshToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
+  cart?: Prisma.CartUpdateOneWithoutUserNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
+  couponUses?: Prisma.CouponUseUpdateManyWithoutUserNestedInput
+  wishlist?: Prisma.WishlistUpdateOneWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutNotificationsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  refreshToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
+  cart?: Prisma.CartUncheckedUpdateOneWithoutUserNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
+  couponUses?: Prisma.CouponUseUncheckedUpdateManyWithoutUserNestedInput
+  wishlist?: Prisma.WishlistUncheckedUpdateOneWithoutUserNestedInput
+  returnRequests?: Prisma.ReturnRequestUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutReturnRequestsInput = {
+  email: string
+  username: string
+  name?: string | null
+  password: string
+  role?: $Enums.Role
+  refreshToken?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  orders?: Prisma.OrderCreateNestedManyWithoutUserInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
+  cart?: Prisma.CartCreateNestedOneWithoutUserInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutUserInput
+  couponUses?: Prisma.CouponUseCreateNestedManyWithoutUserInput
+  wishlist?: Prisma.WishlistCreateNestedOneWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutReturnRequestsInput = {
+  id?: number
+  email: string
+  username: string
+  name?: string | null
+  password: string
+  role?: $Enums.Role
+  refreshToken?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutUserInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
+  cart?: Prisma.CartUncheckedCreateNestedOneWithoutUserInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
+  couponUses?: Prisma.CouponUseUncheckedCreateNestedManyWithoutUserInput
+  wishlist?: Prisma.WishlistUncheckedCreateNestedOneWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutReturnRequestsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutReturnRequestsInput, Prisma.UserUncheckedCreateWithoutReturnRequestsInput>
+}
+
+export type UserUpsertWithoutReturnRequestsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutReturnRequestsInput, Prisma.UserUncheckedUpdateWithoutReturnRequestsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutReturnRequestsInput, Prisma.UserUncheckedCreateWithoutReturnRequestsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutReturnRequestsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutReturnRequestsInput, Prisma.UserUncheckedUpdateWithoutReturnRequestsInput>
+}
+
+export type UserUpdateWithoutReturnRequestsInput = {
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  refreshToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUpdateManyWithoutUserNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
+  cart?: Prisma.CartUpdateOneWithoutUserNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
+  couponUses?: Prisma.CouponUseUpdateManyWithoutUserNestedInput
+  wishlist?: Prisma.WishlistUpdateOneWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutReturnRequestsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  refreshToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutUserNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
+  cart?: Prisma.CartUncheckedUpdateOneWithoutUserNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
+  couponUses?: Prisma.CouponUseUncheckedUpdateManyWithoutUserNestedInput
+  wishlist?: Prisma.WishlistUncheckedUpdateOneWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -1223,6 +1509,8 @@ export type UserCountOutputType = {
   reviews: number
   invoices: number
   couponUses: number
+  notifications: number
+  returnRequests: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1231,6 +1519,8 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   reviews?: boolean | UserCountOutputTypeCountReviewsArgs
   invoices?: boolean | UserCountOutputTypeCountInvoicesArgs
   couponUses?: boolean | UserCountOutputTypeCountCouponUsesArgs
+  notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
+  returnRequests?: boolean | UserCountOutputTypeCountReturnRequestsArgs
 }
 
 /**
@@ -1278,6 +1568,20 @@ export type UserCountOutputTypeCountCouponUsesArgs<ExtArgs extends runtime.Types
   where?: Prisma.CouponUseWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.NotificationWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountReturnRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReturnRequestWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1296,6 +1600,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   invoices?: boolean | Prisma.User$invoicesArgs<ExtArgs>
   couponUses?: boolean | Prisma.User$couponUsesArgs<ExtArgs>
   wishlist?: boolean | Prisma.User$wishlistArgs<ExtArgs>
+  notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
+  returnRequests?: boolean | Prisma.User$returnRequestsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1344,6 +1650,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   invoices?: boolean | Prisma.User$invoicesArgs<ExtArgs>
   couponUses?: boolean | Prisma.User$couponUsesArgs<ExtArgs>
   wishlist?: boolean | Prisma.User$wishlistArgs<ExtArgs>
+  notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
+  returnRequests?: boolean | Prisma.User$returnRequestsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1359,6 +1667,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     invoices: Prisma.$InvoicePayload<ExtArgs>[]
     couponUses: Prisma.$CouponUsePayload<ExtArgs>[]
     wishlist: Prisma.$WishlistPayload<ExtArgs> | null
+    notifications: Prisma.$NotificationPayload<ExtArgs>[]
+    returnRequests: Prisma.$ReturnRequestPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1771,6 +2081,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   invoices<T extends Prisma.User$invoicesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$invoicesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoicePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   couponUses<T extends Prisma.User$couponUsesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$couponUsesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CouponUsePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   wishlist<T extends Prisma.User$wishlistArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$wishlistArgs<ExtArgs>>): Prisma.Prisma__WishlistClient<runtime.Types.Result.GetResult<Prisma.$WishlistPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  notifications<T extends Prisma.User$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  returnRequests<T extends Prisma.User$returnRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$returnRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReturnRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2357,6 +2669,54 @@ export type User$wishlistArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   include?: Prisma.WishlistInclude<ExtArgs> | null
   where?: Prisma.WishlistWhereInput
+}
+
+/**
+ * User.notifications
+ */
+export type User$notificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Notification
+   */
+  select?: Prisma.NotificationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Notification
+   */
+  omit?: Prisma.NotificationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotificationInclude<ExtArgs> | null
+  where?: Prisma.NotificationWhereInput
+  orderBy?: Prisma.NotificationOrderByWithRelationInput | Prisma.NotificationOrderByWithRelationInput[]
+  cursor?: Prisma.NotificationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.NotificationScalarFieldEnum | Prisma.NotificationScalarFieldEnum[]
+}
+
+/**
+ * User.returnRequests
+ */
+export type User$returnRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ReturnRequest
+   */
+  select?: Prisma.ReturnRequestSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ReturnRequest
+   */
+  omit?: Prisma.ReturnRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReturnRequestInclude<ExtArgs> | null
+  where?: Prisma.ReturnRequestWhereInput
+  orderBy?: Prisma.ReturnRequestOrderByWithRelationInput | Prisma.ReturnRequestOrderByWithRelationInput[]
+  cursor?: Prisma.ReturnRequestWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReturnRequestScalarFieldEnum | Prisma.ReturnRequestScalarFieldEnum[]
 }
 
 /**

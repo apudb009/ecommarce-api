@@ -4,13 +4,18 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import puppeteer from 'puppeteer';
-import { InvoiceStatus } from 'src/generated/prisma/enums';
+import { InvoiceStatus, TaxType } from 'src/generated/prisma/enums';
 import { PrismaService } from 'src/prisma.service';
 import { InvoiceType } from './entity/invoice.type';
+import { TaxService } from 'src/tax/tax.service';
+import { Tax } from 'src/generated/prisma/client';
 
 @Injectable()
 export class InvoiceService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private tax: TaxService,
+  ) {}
 
   // ── GENERATE INVOICE NUMBER ────────────────────────
   private async generateInvoiceNumber(): Promise<string> {
@@ -216,7 +221,9 @@ export class InvoiceService {
     isAdmin = false,
   ): Promise<Buffer> {
     const invoice = await this.getOne(id, userId, isAdmin);
-    const html = this.buildInvoiceHtml(invoice);
+    const taxData = (await this.tax.getActive()) as Tax;
+
+    const html = this.buildInvoiceHtml(invoice, taxData);
 
     const browser = await puppeteer.launch({
       headless: true,
@@ -245,10 +252,15 @@ export class InvoiceService {
   }
 
   // ── BUILD HTML TEMPLATE ────────────────────────────
-  private buildInvoiceHtml(invoice: InvoiceType) {
+  private buildInvoiceHtml(invoice: InvoiceType, taxData: Tax) {
     const order = invoice.order;
     const user = invoice.user;
     const address = order.address;
+
+    const taxRate =
+      taxData.type === TaxType.PERCENTAGE
+        ? `${Number(taxData.rate ?? 0)}%`
+        : 'Fixed';
 
     const itemsHtml = order.items
       .map(
@@ -479,15 +491,15 @@ export class InvoiceService {
               </tr>
               <tr>
                 <td>Shipping</td>
-                <td>${Number(order.totalAmount) > 50 ? 'Free' : '$9.99'}</td>
+                <td>${Number(order.shippingAmount) === 0 ? 'Free' : Number(order.shippingAmount)}</td>
               </tr>
               <tr>
-                <td>Tax (8%)</td>
-                <td>$${(Number(order.totalAmount) * 0.08).toFixed(2)}</td>
+                <td>Tax (${taxRate})</td>
+                <td>$${Number(order.taxAmount).toFixed(2)}</td>
               </tr>
               <tr class="total-row">
                 <td>Total</td>
-                <td>$${(Number(order.totalAmount) + (Number(order.totalAmount) > 50 ? 0 : 9.99) + Number(order.totalAmount) * 0.08).toFixed(2)}</td>
+                <td>$${Number(order.grandTotalAmount).toFixed(2)}</td>
               </tr>
             </table>
           </div>

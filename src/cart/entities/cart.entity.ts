@@ -19,6 +19,7 @@ export type CartWithItems = Prisma.CartGetPayload<{
             };
           };
         };
+        variant: true;
       };
     };
   };
@@ -36,6 +37,8 @@ export interface FormattedCart {
   items: FormattedCartItem[];
   totalItems: number;
   totalAmount: number;
+  taxAmount: number;
+  shippingAmount: number;
   grandTotal: number;
   updatedAt: Date;
   discountAmount?: number;

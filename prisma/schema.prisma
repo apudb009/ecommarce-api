@@ -32,6 +32,8 @@ model User {
   invoices  Invoice[]
   couponUses CouponUse[]
   wishlist Wishlist?
+  notifications Notification[]
+  returnRequests ReturnRequest[]
 }
 
 enum Role {
@@ -74,7 +76,6 @@ model Product {
   description String?
   price       Decimal  @db.Decimal(10, 2)
   stock       Int      @default(0)
-  images      String[] // array of image URLs
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -82,10 +83,12 @@ model Product {
   category   Category @relation(fields: [categoryId], references: [id])
   categoryId Int
 
+  images     ProductImage[]
   orderItems OrderItem[]
   reviews    Review[]
   cartItems  CartItem[]
   wishlistItems WishlistItem[]
+  variants    ProductVariant[]
 }
 
 // ── REVIEW ─────────────────────────────────────────
@@ -126,6 +129,9 @@ model CartItem {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId Int
 
+  variant   ProductVariant? @relation(fields: [variantId], references: [id])
+  variantId Int?
+
   @@unique([cartId, productId])  // one entry per product per cart
 }
 
@@ -134,6 +140,9 @@ model Order {
   id              Int         @id @default(autoincrement())
   status          OrderStatus @default(PENDING)
   totalAmount     Decimal     @db.Decimal(10, 2)
+  taxAmount       Decimal     @db.Decimal(10, 2) @default(0)
+  shippingAmount  Decimal     @db.Decimal(10, 2) @default(0)
+  grandTotalAmount Decimal     @db.Decimal(10, 2) @default(0)
   stripePaymentId String?     // Stripe payment intent ID
   notes           String?
   createdAt       DateTime    @default(now())
@@ -150,6 +159,7 @@ model Order {
   discountAmount Decimal?  @db.Decimal(10, 2)
   couponCode     String?
   couponUse      CouponUse?
+  returnRequest  ReturnRequest?
 }
 
 enum OrderStatus {
@@ -174,6 +184,9 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id])
   productId Int
   productName String  // snapshot of name at purchase time
+  variantId    Int?
+  variantName  String?  // snapshot e.g. "Size: L / Color: Red"
+  variant      ProductVariant? @relation(fields: [variantId], references: [id])
 }
 
 // ── PAYMENT ────────────────────────────────────────
@@ -256,6 +269,7 @@ enum CouponType {
   FIXED
 }
 
+// ── COUPON USE ─────────────────────────────────────────
 model CouponUse {
   id        Int      @id @default(autoincrement())
   usedAt    DateTime @default(now())
@@ -272,6 +286,8 @@ model CouponUse {
   @@index([couponId, userId])
 }
 
+// ── Wishlist ─────────────────────────────────────────
+
 model Wishlist {
   id        Int           @id @default(autoincrement())
   createdAt DateTime      @default(now())
@@ -281,6 +297,8 @@ model Wishlist {
 
   items     WishlistItem[]
 }
+
+// ── Wishlist Item ─────────────────────────────────────────
 
 model WishlistItem {
   id      Int      @id @default(autoincrement())
@@ -292,4 +310,119 @@ model WishlistItem {
   productId  Int
 
   @@unique([wishlistId, productId])
+}
+
+// ── Newsletter ─────────────────────────────────────────
+
+model Newsletter {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+// ── Notification ─────────────────────────────────────────
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  title     String
+  message   String
+  type      NotificationType
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+}
+
+enum NotificationType {
+  ORDER_PLACED
+  PROMO
+  SYSTEM
+  LOW_STOCK
+}
+
+// ── Tax ─────────────────────────────────────────
+model Tax {
+  id        Int      @id @default(autoincrement())
+  name      String
+  rate      Decimal @db.Decimal(10, 2)
+  type      TaxType
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+enum TaxType {
+  PERCENTAGE
+  FIXED
+}
+
+// ── Shipping ─────────────────────────────────────────
+model Shipping {
+  id        Int      @id @default(autoincrement())
+  name      String
+  price     Decimal @db.Decimal(10, 2)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+// ── Product image ─────────────────────────────────────────
+model ProductImage {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  url       String
+  isMain    Boolean  @default(false)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+}
+
+// ── Return request ─────────────────────────────────────────
+model ReturnRequest {
+  id        Int          @id @default(autoincrement())
+  reason    String
+  details   String?
+  status    ReturnStatus @default(PENDING)
+  adminNote String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  order   Order @relation(fields: [orderId], references: [id])
+  orderId Int   @unique  // one return per order
+
+  user    User  @relation(fields: [userId], references: [id])
+  userId  Int
+}
+
+enum ReturnStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REFUNDED
+}
+
+enum ReturnReason {
+  DAMAGED
+  WRONG_ITEM
+  NOT_AS_DESCRIBED
+  CHANGED_MIND
+  OTHER
+}
+
+// ── Product variant ─────────────────────────────────────────
+model ProductVariant {
+  id        Int     @id @default(autoincrement())
+  name      String  // "Size" or "Color"
+  value     String  // "Large" or "Red"
+  price     Decimal? @db.Decimal(10, 2)  // override if different price
+  stock     Int     @default(0)
+  sku       String @unique
+  isActive  Boolean @default(true)
+  color     String?  // ← hex color for swatches e.g. "#FF5733"
+  image     String?  // ← optional variant-specific image
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
 }

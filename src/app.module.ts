@@ -19,6 +19,13 @@ import { InvoiceModule } from './invoice/invoice.module';
 import { CouponModule } from './coupon/coupon.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { NewsletterModule } from './newsletter/newsletter.module';
+import { NotificationModule } from './notification/notification.module';
+import { UploadModule } from './upload/upload.module';
+import { TaxModule } from './tax/tax.module';
+import { ShippingModule } from './shipping/shipping.module';
+import { ProductImageModule } from './product_image/product_image.module';
+import { RetrunRequestModule } from './retrun_request/retrun_request.module';
 
 @Module({
   imports: [
@@ -51,6 +58,13 @@ import { AnalyticsModule } from './analytics/analytics.module';
     CouponModule,
     WishlistModule,
     AnalyticsModule,
+    NewsletterModule,
+    NotificationModule,
+    UploadModule,
+    TaxModule,
+    ShippingModule,
+    ProductImageModule,
+    RetrunRequestModule,
   ],
   controllers: [AppController],
   providers: [

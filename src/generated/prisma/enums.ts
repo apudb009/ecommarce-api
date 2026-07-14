@@ -55,3 +55,42 @@ export const CouponType = {
 } as const
 
 export type CouponType = (typeof CouponType)[keyof typeof CouponType]
+
+
+export const NotificationType = {
+  ORDER_PLACED: 'ORDER_PLACED',
+  PROMO: 'PROMO',
+  SYSTEM: 'SYSTEM',
+  LOW_STOCK: 'LOW_STOCK'
+} as const
+
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
+
+
+export const TaxType = {
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED: 'FIXED'
+} as const
+
+export type TaxType = (typeof TaxType)[keyof typeof TaxType]
+
+
+export const ReturnStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  REFUNDED: 'REFUNDED'
+} as const
+
+export type ReturnStatus = (typeof ReturnStatus)[keyof typeof ReturnStatus]
+
+
+export const ReturnReason = {
+  DAMAGED: 'DAMAGED',
+  WRONG_ITEM: 'WRONG_ITEM',
+  NOT_AS_DESCRIBED: 'NOT_AS_DESCRIBED',
+  CHANGED_MIND: 'CHANGED_MIND',
+  OTHER: 'OTHER'
+} as const
+
+export type ReturnReason = (typeof ReturnReason)[keyof typeof ReturnReason]

@@ -7,6 +7,7 @@ import { AddressModule } from 'src/address/address.module';
 import { PrismaService } from 'src/prisma.service';
 import { InvoiceModule } from 'src/invoice/invoice.module';
 import { CouponModule } from 'src/coupon/coupon.module';
+import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { CouponModule } from 'src/coupon/coupon.module';
     AddressModule,
     InvoiceModule,
     CouponModule,
+    NotificationModule,
   ],
   controllers: [OrderController],
   providers: [OrderService, PrismaService],

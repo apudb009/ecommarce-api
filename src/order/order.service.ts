@@ -18,6 +18,7 @@ import { FilterOrderDto } from './dto/filter-order.dto';
 import { MailService } from 'src/mail/mail.service';
 import { InvoiceService } from 'src/invoice/invoice.service';
 import { CouponService } from 'src/coupon/coupon.service';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class OrderService {
@@ -29,6 +30,7 @@ export class OrderService {
     private mail: MailService,
     private invoice: InvoiceService,
     private coupon: CouponService,
+    private notification: NotificationService,
   ) {}
 
   // ── PLACE ORDER FROM CART ──────────────────────────
@@ -44,7 +46,7 @@ export class OrderService {
 
     // ── validate coupon if provided ──────────────────
     let discountAmount = 0;
-    let finalAmount = cart.totalAmount;
+    const finalAmount = cart.grandTotal;
 
     if (createOrderDto.couponCode) {
       const couponResult = await this.coupon.validate(
@@ -53,7 +55,7 @@ export class OrderService {
         cart.totalAmount,
       );
       discountAmount = couponResult.discount;
-      finalAmount = couponResult.finalAmount;
+      //finalAmount = couponResult.finalAmount;
     }
 
     //Check each product for stock and active
@@ -75,11 +77,14 @@ export class OrderService {
         data: {
           userId,
           addressId: createOrderDto.addressId,
-          totalAmount: finalAmount, // ← discounted amount
+          totalAmount: cart.totalAmount,
           discountAmount: discountAmount > 0 ? discountAmount : undefined,
+          grandTotalAmount: finalAmount,
           couponCode: createOrderDto.couponCode,
           notes: createOrderDto.notes,
           status: OrderStatus.PENDING,
+          taxAmount: cart.taxAmount,
+          shippingAmount: cart.shippingAmount,
           items: {
             create: cart.items.map((item: FormattedCartItem) => ({
               productId: item.product.id,
@@ -92,7 +97,7 @@ export class OrderService {
         },
         include: this.getIncludes(),
       });
-      //Update product stock
+      //Update product stock + variant stock
       for (const item of cart.items) {
         await tx.product.update({
           where: {
@@ -104,6 +109,19 @@ export class OrderService {
             },
           },
         });
+
+        if (item.variantId) {
+          await tx.productVariant.update({
+            where: {
+              id: item.variantId,
+            },
+            data: {
+              stock: {
+                decrement: item.quantity,
+              },
+            },
+          });
+        }
       }
 
       return newOrder;
@@ -237,6 +255,20 @@ export class OrderService {
             },
           },
         });
+
+        //update variant stock
+        if (item.variantId) {
+          await tx.productVariant.update({
+            where: {
+              id: item.variantId,
+            },
+            data: {
+              stock: {
+                increment: item.quantity,
+              },
+            },
+          });
+        }
       }
       return tx.order.update({
         where: { id },
@@ -314,7 +346,7 @@ export class OrderService {
     let updatedOrder: Awaited<ReturnType<typeof this.prisma.order.update>>;
 
     //Cancel order and update items stock
-    if (status === OrderStatus.CANCELLED) {
+    if (status === OrderStatus.CANCELLED || status === OrderStatus.REFUNDED) {
       updatedOrder = await this.prisma.$transaction(async (tx) => {
         //update product stock
         for (const item of order.items) {
@@ -328,6 +360,20 @@ export class OrderService {
               },
             },
           });
+
+          //update variant stock
+          if (item.variantId) {
+            await tx.productVariant.update({
+              where: {
+                id: item.variantId,
+              },
+              data: {
+                stock: {
+                  increment: item.quantity,
+                },
+              },
+            });
+          }
         }
         return tx.order.update({
           where: { id },
@@ -348,6 +394,15 @@ export class OrderService {
       where: { id: updatedOrder.userId },
       select: { email: true, name: true, username: true },
     });
+
+    // send notification
+    this.notification
+      .notifyOrderUpdate(
+        updatedOrder.userId,
+        updatedOrder.id,
+        updatedOrder.status,
+      )
+      .catch(() => {});
 
     // send status update email
     this.mail
@@ -382,6 +437,13 @@ export class OrderService {
           unitPrice: true,
           total: true,
           productName: true,
+          variantId: true,
+          variant: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       },
       address: true,
