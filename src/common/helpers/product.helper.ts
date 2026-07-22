@@ -46,6 +46,7 @@ export class ProductHelper {
         include: {
           category: { select: { id: true, name: true, slug: true } },
           images: { select: { url: true, id: true, isMain: true } },
+          variants: true,
           _count: {
             select: {
               reviews: true,

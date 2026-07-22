@@ -406,7 +406,11 @@ export const ModelName = {
   Shipping: 'Shipping',
   ProductImage: 'ProductImage',
   ReturnRequest: 'ReturnRequest',
-  ProductVariant: 'ProductVariant'
+  ProductVariant: 'ProductVariant',
+  VariantImage: 'VariantImage',
+  StoreSetting: 'StoreSetting',
+  FlashSale: 'FlashSale',
+  FlashSaleProduct: 'FlashSaleProduct'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -422,7 +426,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "address" | "category" | "product" | "review" | "cart" | "cartItem" | "order" | "orderItem" | "payment" | "banner" | "invoice" | "coupon" | "couponUse" | "wishlist" | "wishlistItem" | "newsletter" | "notification" | "tax" | "shipping" | "productImage" | "returnRequest" | "productVariant"
+    modelProps: "user" | "address" | "category" | "product" | "review" | "cart" | "cartItem" | "order" | "orderItem" | "payment" | "banner" | "invoice" | "coupon" | "couponUse" | "wishlist" | "wishlistItem" | "newsletter" | "notification" | "tax" | "shipping" | "productImage" | "returnRequest" | "productVariant" | "variantImage" | "storeSetting" | "flashSale" | "flashSaleProduct"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2128,6 +2132,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    VariantImage: {
+      payload: Prisma.$VariantImagePayload<ExtArgs>
+      fields: Prisma.VariantImageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.VariantImageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VariantImagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.VariantImageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VariantImagePayload>
+        }
+        findFirst: {
+          args: Prisma.VariantImageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VariantImagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.VariantImageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VariantImagePayload>
+        }
+        findMany: {
+          args: Prisma.VariantImageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VariantImagePayload>[]
+        }
+        create: {
+          args: Prisma.VariantImageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VariantImagePayload>
+        }
+        createMany: {
+          args: Prisma.VariantImageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.VariantImageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VariantImagePayload>[]
+        }
+        delete: {
+          args: Prisma.VariantImageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VariantImagePayload>
+        }
+        update: {
+          args: Prisma.VariantImageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VariantImagePayload>
+        }
+        deleteMany: {
+          args: Prisma.VariantImageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.VariantImageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.VariantImageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VariantImagePayload>[]
+        }
+        upsert: {
+          args: Prisma.VariantImageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VariantImagePayload>
+        }
+        aggregate: {
+          args: Prisma.VariantImageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVariantImage>
+        }
+        groupBy: {
+          args: Prisma.VariantImageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VariantImageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.VariantImageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VariantImageCountAggregateOutputType> | number
+        }
+      }
+    }
+    StoreSetting: {
+      payload: Prisma.$StoreSettingPayload<ExtArgs>
+      fields: Prisma.StoreSettingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.StoreSettingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.StoreSettingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingPayload>
+        }
+        findFirst: {
+          args: Prisma.StoreSettingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.StoreSettingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingPayload>
+        }
+        findMany: {
+          args: Prisma.StoreSettingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingPayload>[]
+        }
+        create: {
+          args: Prisma.StoreSettingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingPayload>
+        }
+        createMany: {
+          args: Prisma.StoreSettingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.StoreSettingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingPayload>[]
+        }
+        delete: {
+          args: Prisma.StoreSettingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingPayload>
+        }
+        update: {
+          args: Prisma.StoreSettingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingPayload>
+        }
+        deleteMany: {
+          args: Prisma.StoreSettingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.StoreSettingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.StoreSettingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingPayload>[]
+        }
+        upsert: {
+          args: Prisma.StoreSettingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StoreSettingPayload>
+        }
+        aggregate: {
+          args: Prisma.StoreSettingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStoreSetting>
+        }
+        groupBy: {
+          args: Prisma.StoreSettingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StoreSettingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.StoreSettingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StoreSettingCountAggregateOutputType> | number
+        }
+      }
+    }
+    FlashSale: {
+      payload: Prisma.$FlashSalePayload<ExtArgs>
+      fields: Prisma.FlashSaleFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FlashSaleFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSalePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FlashSaleFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSalePayload>
+        }
+        findFirst: {
+          args: Prisma.FlashSaleFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSalePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FlashSaleFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSalePayload>
+        }
+        findMany: {
+          args: Prisma.FlashSaleFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSalePayload>[]
+        }
+        create: {
+          args: Prisma.FlashSaleCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSalePayload>
+        }
+        createMany: {
+          args: Prisma.FlashSaleCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FlashSaleCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSalePayload>[]
+        }
+        delete: {
+          args: Prisma.FlashSaleDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSalePayload>
+        }
+        update: {
+          args: Prisma.FlashSaleUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSalePayload>
+        }
+        deleteMany: {
+          args: Prisma.FlashSaleDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FlashSaleUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FlashSaleUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSalePayload>[]
+        }
+        upsert: {
+          args: Prisma.FlashSaleUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSalePayload>
+        }
+        aggregate: {
+          args: Prisma.FlashSaleAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFlashSale>
+        }
+        groupBy: {
+          args: Prisma.FlashSaleGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FlashSaleGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FlashSaleCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FlashSaleCountAggregateOutputType> | number
+        }
+      }
+    }
+    FlashSaleProduct: {
+      payload: Prisma.$FlashSaleProductPayload<ExtArgs>
+      fields: Prisma.FlashSaleProductFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FlashSaleProductFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSaleProductPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FlashSaleProductFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSaleProductPayload>
+        }
+        findFirst: {
+          args: Prisma.FlashSaleProductFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSaleProductPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FlashSaleProductFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSaleProductPayload>
+        }
+        findMany: {
+          args: Prisma.FlashSaleProductFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSaleProductPayload>[]
+        }
+        create: {
+          args: Prisma.FlashSaleProductCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSaleProductPayload>
+        }
+        createMany: {
+          args: Prisma.FlashSaleProductCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FlashSaleProductCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSaleProductPayload>[]
+        }
+        delete: {
+          args: Prisma.FlashSaleProductDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSaleProductPayload>
+        }
+        update: {
+          args: Prisma.FlashSaleProductUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSaleProductPayload>
+        }
+        deleteMany: {
+          args: Prisma.FlashSaleProductDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FlashSaleProductUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FlashSaleProductUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSaleProductPayload>[]
+        }
+        upsert: {
+          args: Prisma.FlashSaleProductUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FlashSaleProductPayload>
+        }
+        aggregate: {
+          args: Prisma.FlashSaleProductAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFlashSaleProduct>
+        }
+        groupBy: {
+          args: Prisma.FlashSaleProductGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FlashSaleProductGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FlashSaleProductCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FlashSaleProductCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2467,11 +2767,57 @@ export const ProductVariantScalarFieldEnum = {
   sku: 'sku',
   isActive: 'isActive',
   color: 'color',
-  image: 'image',
   productId: 'productId'
 } as const
 
 export type ProductVariantScalarFieldEnum = (typeof ProductVariantScalarFieldEnum)[keyof typeof ProductVariantScalarFieldEnum]
+
+
+export const VariantImageScalarFieldEnum = {
+  id: 'id',
+  url: 'url',
+  isMain: 'isMain',
+  order: 'order',
+  createdAt: 'createdAt',
+  variantId: 'variantId'
+} as const
+
+export type VariantImageScalarFieldEnum = (typeof VariantImageScalarFieldEnum)[keyof typeof VariantImageScalarFieldEnum]
+
+
+export const StoreSettingScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  value: 'value',
+  type: 'type'
+} as const
+
+export type StoreSettingScalarFieldEnum = (typeof StoreSettingScalarFieldEnum)[keyof typeof StoreSettingScalarFieldEnum]
+
+
+export const FlashSaleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  discountType: 'discountType',
+  discountValue: 'discountValue',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  isActive: 'isActive',
+  bannerColor: 'bannerColor',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FlashSaleScalarFieldEnum = (typeof FlashSaleScalarFieldEnum)[keyof typeof FlashSaleScalarFieldEnum]
+
+
+export const FlashSaleProductScalarFieldEnum = {
+  flashSaleId: 'flashSaleId',
+  productId: 'productId'
+} as const
+
+export type FlashSaleProductScalarFieldEnum = (typeof FlashSaleProductScalarFieldEnum)[keyof typeof FlashSaleProductScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2680,6 +3026,20 @@ export type ListEnumReturnStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'DiscountType'
+ */
+export type EnumDiscountTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DiscountType'>
+    
+
+
+/**
+ * Reference to a field of type 'DiscountType[]'
+ */
+export type ListEnumDiscountTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DiscountType[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -2825,6 +3185,10 @@ export type GlobalOmitConfig = {
   productImage?: Prisma.ProductImageOmit
   returnRequest?: Prisma.ReturnRequestOmit
   productVariant?: Prisma.ProductVariantOmit
+  variantImage?: Prisma.VariantImageOmit
+  storeSetting?: Prisma.StoreSettingOmit
+  flashSale?: Prisma.FlashSaleOmit
+  flashSaleProduct?: Prisma.FlashSaleProductOmit
 }
 
 /* Types for Logging */

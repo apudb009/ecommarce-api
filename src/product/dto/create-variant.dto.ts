@@ -5,6 +5,7 @@ import {
   IsBoolean,
   IsOptional,
   Min,
+  IsArray,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -36,7 +37,8 @@ export class CreateVariantDto {
   @IsOptional()
   color?: string; // ← hex color e.g. "#FF5733"
 
-  @IsString()
+  @IsArray()
+  @IsString({ each: true })
   @IsOptional()
-  image?: string; // ← variant image URL
+  images?: string[]; // ← variant images URL
 }

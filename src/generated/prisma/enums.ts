@@ -59,6 +59,7 @@ export type CouponType = (typeof CouponType)[keyof typeof CouponType]
 
 export const NotificationType = {
   ORDER_PLACED: 'ORDER_PLACED',
+  ORDER_CANCELLED: 'ORDER_CANCELLED',
   PROMO: 'PROMO',
   SYSTEM: 'SYSTEM',
   LOW_STOCK: 'LOW_STOCK'
@@ -94,3 +95,11 @@ export const ReturnReason = {
 } as const
 
 export type ReturnReason = (typeof ReturnReason)[keyof typeof ReturnReason]
+
+
+export const DiscountType = {
+  PERCENTAGE: 'PERCENTAGE',
+  FIXED: 'FIXED'
+} as const
+
+export type DiscountType = (typeof DiscountType)[keyof typeof DiscountType]

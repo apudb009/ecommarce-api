@@ -275,4 +275,154 @@ export class MailService {
       html,
     });
   }
+
+  // ── ABANDONED CART EMAIL ───────────────────────────
+  async sendAbandonedCart(data: {
+    to: string;
+    name: string;
+    items: {
+      name: string;
+      price: number;
+      quantity: number;
+      image?: string;
+      slug: string;
+    }[];
+  }) {
+    const itemsHtml = data.items
+      .map(
+        (item) => `
+    <tr>
+      <td style="padding: 10px; border-bottom: 1px solid #f0f0f0;">
+        ${
+          item.image
+            ? `<img src="${item.image}" alt="${item.name}"
+               style="width:50px;height:50px;object-fit:cover;border-radius:6px;" />`
+            : ''
+        }
+      </td>
+      <td style="padding: 10px; border-bottom: 1px solid #f0f0f0;">
+        ${item.name}
+      </td>
+      <td style="padding: 10px; border-bottom: 1px solid #f0f0f0; text-align: center;">
+        ${item.quantity}
+      </td>
+      <td style="padding: 10px; border-bottom: 1px solid #f0f0f0; text-align: right;">
+        $${item.price.toFixed(2)}
+      </td>
+    </tr>
+  `,
+      )
+      .join('');
+
+    const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background: #2563eb; padding: 20px; text-align: center;">
+        <h1 style="color: white; margin: 0;">You left something behind! 🛒</h1>
+      </div>
+
+      <div style="padding: 24px;">
+        <p>Hi <strong>${data.name}</strong>,</p>
+        <p>You left some items in your cart. Complete your purchase before they sell out!</p>
+
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+          <thead>
+            <tr style="background: #f9fafb;">
+              <th style="padding: 8px;"></th>
+              <th style="padding: 8px; text-align: left;">Product</th>
+              <th style="padding: 8px; text-align: center;">Qty</th>
+              <th style="padding: 8px; text-align: right;">Price</th>
+            </tr>
+          </thead>
+          <tbody>${itemsHtml}</tbody>
+        </table>
+
+        <div style="text-align: center; margin: 24px 0;">
+          
+            href="${this.config.get('FRONTEND_URL')}/cart"
+            style="background: #2563eb; color: white; padding: 12px 32px;
+                   border-radius: 6px; text-decoration: none; font-weight: bold;"
+          >
+            Complete My Purchase →
+          </a>
+        </div>
+
+        <p style="color: #6b7280; font-size: 14px;">
+          Don't wait too long — stock is limited!
+        </p>
+      </div>
+    </div>
+  `;
+
+    await this.sendMail({
+      to: data.to,
+      subject: '🛒 You left items in your cart!',
+      html,
+    });
+  }
+
+  // ── WEEKLY REPORT EMAIL ────────────────────────────
+  async sendWeeklyReport(data: {
+    to: string;
+    name: string;
+    weekOrders: number;
+    weekRevenue: number;
+    weekNewUsers: number;
+    weekReviews: number;
+  }) {
+    const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background: #1e1b4b; padding: 20px; text-align: center;">
+        <h1 style="color: white; margin: 0;">📊 Weekly Report</h1>
+        <p style="color: #a5b4fc; margin: 4px 0 0;">
+          ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+        </p>
+      </div>
+
+      <div style="padding: 24px;">
+        <p>Hi <strong>${data.name}</strong>, here's your store performance this week:</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0;">
+          ${[
+            { label: 'New Orders', value: data.weekOrders, icon: '📦' },
+            {
+              label: 'Revenue',
+              value: `$${data.weekRevenue.toFixed(2)}`,
+              icon: '💰',
+            },
+            { label: 'New Users', value: data.weekNewUsers, icon: '👤' },
+            { label: 'New Reviews', value: data.weekReviews, icon: '⭐' },
+          ]
+            .map(
+              (stat) => `
+            <div style="background: #f9fafb; border-radius: 8px; padding: 16px; text-align: center;">
+              <div style="font-size: 24px;">${stat.icon}</div>
+              <div style="font-size: 24px; font-weight: bold; color: #111827;">
+                ${stat.value}
+              </div>
+              <div style="font-size: 12px; color: #6b7280;">${stat.label}</div>
+            </div>
+          `,
+            )
+            .join('')}
+        </div>
+
+        <div style="text-align: center; margin: 24px 0;">
+          
+            href="${this.config.get('FRONTEND_URL')}/admin/dashboard"
+            style="background: #1e1b4b; color: white; padding: 12px 32px;
+                   border-radius: 6px; text-decoration: none; font-weight: bold;"
+          >
+            View Full Dashboard →
+          </a>
+        </div>
+      </div>
+    </div>
+  `;
+
+    await this.sendMail({
+      to: data.to,
+      subject: `📊 Weekly Store Report — ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+      html,
+    });
+  }
 }

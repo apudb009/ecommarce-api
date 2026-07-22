@@ -184,7 +184,7 @@ export class InvoiceService {
         order: {
           select: {
             id: true,
-            totalAmount: true,
+            grandTotalAmount: true,
             status: true,
             createdAt: true,
           },

@@ -92,6 +92,7 @@ export class OrderService {
               unitPrice: item.product.price,
               total: item.subtotal,
               productName: item.product.name,
+              variantId: item.variantId,
             })),
           },
         },

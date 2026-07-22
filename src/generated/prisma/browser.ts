@@ -132,3 +132,23 @@ export type ReturnRequest = Prisma.ReturnRequestModel
  * 
  */
 export type ProductVariant = Prisma.ProductVariantModel
+/**
+ * Model VariantImage
+ * 
+ */
+export type VariantImage = Prisma.VariantImageModel
+/**
+ * Model StoreSetting
+ * 
+ */
+export type StoreSetting = Prisma.StoreSettingModel
+/**
+ * Model FlashSale
+ * 
+ */
+export type FlashSale = Prisma.FlashSaleModel
+/**
+ * Model FlashSaleProduct
+ * 
+ */
+export type FlashSaleProduct = Prisma.FlashSaleProductModel

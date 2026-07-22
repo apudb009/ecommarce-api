@@ -73,7 +73,11 @@ export const ModelName = {
   Shipping: 'Shipping',
   ProductImage: 'ProductImage',
   ReturnRequest: 'ReturnRequest',
-  ProductVariant: 'ProductVariant'
+  ProductVariant: 'ProductVariant',
+  VariantImage: 'VariantImage',
+  StoreSetting: 'StoreSetting',
+  FlashSale: 'FlashSale',
+  FlashSaleProduct: 'FlashSaleProduct'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -392,11 +396,57 @@ export const ProductVariantScalarFieldEnum = {
   sku: 'sku',
   isActive: 'isActive',
   color: 'color',
-  image: 'image',
   productId: 'productId'
 } as const
 
 export type ProductVariantScalarFieldEnum = (typeof ProductVariantScalarFieldEnum)[keyof typeof ProductVariantScalarFieldEnum]
+
+
+export const VariantImageScalarFieldEnum = {
+  id: 'id',
+  url: 'url',
+  isMain: 'isMain',
+  order: 'order',
+  createdAt: 'createdAt',
+  variantId: 'variantId'
+} as const
+
+export type VariantImageScalarFieldEnum = (typeof VariantImageScalarFieldEnum)[keyof typeof VariantImageScalarFieldEnum]
+
+
+export const StoreSettingScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  value: 'value',
+  type: 'type'
+} as const
+
+export type StoreSettingScalarFieldEnum = (typeof StoreSettingScalarFieldEnum)[keyof typeof StoreSettingScalarFieldEnum]
+
+
+export const FlashSaleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  discountType: 'discountType',
+  discountValue: 'discountValue',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  isActive: 'isActive',
+  bannerColor: 'bannerColor',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FlashSaleScalarFieldEnum = (typeof FlashSaleScalarFieldEnum)[keyof typeof FlashSaleScalarFieldEnum]
+
+
+export const FlashSaleProductScalarFieldEnum = {
+  flashSaleId: 'flashSaleId',
+  productId: 'productId'
+} as const
+
+export type FlashSaleProductScalarFieldEnum = (typeof FlashSaleProductScalarFieldEnum)[keyof typeof FlashSaleProductScalarFieldEnum]
 
 
 export const SortOrder = {

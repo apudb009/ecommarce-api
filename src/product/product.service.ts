@@ -11,6 +11,7 @@ import { FilterProductDto } from './dto/filter-product.dto';
 import { ProductHelper } from 'src/common/helpers/product.helper';
 import { ProductImageService } from 'src/product_image/product_image.service';
 import { CreateVariantDto } from './dto/create-variant.dto';
+import { ProductVariantImageService } from 'src/product_variant_image/product_variant_image.service';
 
 @Injectable()
 export class ProductService {
@@ -19,6 +20,7 @@ export class ProductService {
     private category: CategoryService,
     private helper: ProductHelper,
     private productImage: ProductImageService,
+    private variantImage: ProductVariantImageService,
   ) {}
 
   // ── CREATE ─────────────────────────────────────────
@@ -80,6 +82,7 @@ export class ProductService {
       include: {
         category: { select: { id: true, name: true, slug: true } },
         images: { select: { url: true, id: true, isMain: true } },
+        variants: true,
         reviews: {
           include: {
             user: { select: { id: true, email: true, name: true } },
@@ -129,6 +132,7 @@ export class ProductService {
       include: {
         category: { select: { id: true, name: true, slug: true } },
         images: { select: { url: true, id: true, isMain: true } },
+        variants: true,
       },
     });
 
@@ -171,6 +175,7 @@ export class ProductService {
         include: {
           category: { select: { id: true, name: true, slug: true } },
           images: { select: { url: true, id: true, isMain: true } },
+          variants: true,
         },
       });
     });
@@ -267,6 +272,7 @@ export class ProductService {
       include: {
         category: { select: { id: true, name: true, slug: true } },
         images: { select: { url: true, id: true, isMain: true } },
+        variants: true,
         _count: { select: { reviews: true } },
       },
     });
@@ -281,16 +287,38 @@ export class ProductService {
   // ── ADD VARIANT ────────────────────────────────────
   async addVariant(id: number, variant: CreateVariantDto) {
     await this.findOne(id);
-    return await this.prisma.productVariant.create({
-      data: {
-        productId: id,
-        ...variant,
-      },
+    const { images, ...variantData } = variant;
+    return await this.prisma.$transaction(async (tx) => {
+      const productVariant = await tx.productVariant.create({
+        data: {
+          productId: id,
+          ...variantData,
+        },
+      });
+
+      if (images) {
+        await this.variantImage.addImages(
+          {
+            variantId: productVariant.id,
+            url: images,
+          },
+          tx,
+        );
+      }
+      return await tx.productVariant.findUnique({
+        where: {
+          id: productVariant.id,
+        },
+        include: {
+          images: true,
+        },
+      });
     });
   }
 
   // ── UPDATE VARIANT ─────────────────────────────────
   async updateVariant(id: number, variantDto: Partial<CreateVariantDto>) {
+    const { images, ...variantData } = variantDto;
     const variant = await this.prisma.productVariant.findUnique({
       where: {
         id,
@@ -301,22 +329,45 @@ export class ProductService {
       throw new NotFoundException('Variant not found');
     }
 
-    return await this.prisma.productVariant.update({
-      where: {
-        id,
-      },
-      data: {
-        ...variantDto,
-      },
+    return await this.prisma.$transaction(async (tx) => {
+      if (images) {
+        await this.variantImage.updateImages(
+          {
+            variantId: id,
+            url: images,
+          },
+          tx,
+        );
+      }
+      await tx.productVariant.update({
+        where: {
+          id,
+        },
+        data: {
+          ...variantData,
+        },
+      });
+
+      return await tx.productVariant.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          images: true,
+        },
+      });
     });
   }
 
   // ── DELETE VARIANT ─────────────────────────────────
   async removeVariant(id: number) {
-    return await this.prisma.productVariant.delete({
-      where: {
-        id,
-      },
+    return await this.prisma.$transaction(async (tx) => {
+      await this.variantImage.deleteImages(id, tx);
+      return await tx.productVariant.delete({
+        where: {
+          id,
+        },
+      });
     });
   }
 
@@ -326,6 +377,9 @@ export class ProductService {
     return await this.prisma.productVariant.findMany({
       where: {
         productId: id,
+      },
+      include: {
+        images: true,
       },
       orderBy: {
         id: 'asc',

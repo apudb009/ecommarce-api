@@ -82,8 +82,6 @@ export class ProductController {
     );
   }
 
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
   @Patch('variants/:variantId')
   updateVariant(
     @Param('variantId', ParseIntPipe) variantId: number,

@@ -63,10 +63,10 @@ export class NotificationController {
     return this.notificationService.markAllAsRead(req.user.sub);
   }
 
-  @Patch('notify-all')
+  // POST /api/notifications/broadcast
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
-  @Patch(':id')
+  @Patch('broadcast')
   notifyAll(@Body() body: { title: string; message: string; link?: string }) {
     return this.notificationService.notifyPromoToAllUsers(
       body.title,

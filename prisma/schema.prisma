@@ -89,6 +89,7 @@ model Product {
   cartItems  CartItem[]
   wishlistItems WishlistItem[]
   variants    ProductVariant[]
+  flashSales FlashSaleProduct[]
 }
 
 // ── REVIEW ─────────────────────────────────────────
@@ -337,6 +338,7 @@ model Notification {
 
 enum NotificationType {
   ORDER_PLACED
+  ORDER_CANCELLED
   PROMO
   SYSTEM
   LOW_STOCK
@@ -418,11 +420,62 @@ model ProductVariant {
   sku       String @unique
   isActive  Boolean @default(true)
   color     String?  // ← hex color for swatches e.g. "#FF5733"
-  image     String?  // ← optional variant-specific image
+  images     VariantImage[]
 
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId Int
 
   cartItems  CartItem[]
   orderItems OrderItem[]
+}
+
+model VariantImage {
+  id        Int      @id @default(autoincrement())
+  url       String
+  isMain    Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  variantId Int
+}
+
+model StoreSetting {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
+  type  String @default("string") // string | number | boolean | json
+}
+
+// ── FLASH SALE ─────────────────────────────────────────
+
+model FlashSale {
+  id            Int      @id @default(autoincrement())
+  name          String
+  description   String?
+  discountType  DiscountType   // PERCENTAGE | FIXED
+  discountValue Decimal  @db.Decimal(10, 2)
+  startTime     DateTime
+  endTime       DateTime
+  isActive      Boolean  @default(true)
+  bannerColor   String   @default("#ef4444")  // hex color for banner
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  products FlashSaleProduct[]
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+// ── FLASH SALE PRODUCT ─────────────────────────────────
+model FlashSaleProduct {
+  flashSale FlashSale @relation(fields: [flashSaleId], references: [id], onDelete: Cascade)
+  flashSaleId Int
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   Int
+
+  @@id([flashSaleId, productId])
 }

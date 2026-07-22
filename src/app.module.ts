@@ -26,6 +26,11 @@ import { TaxModule } from './tax/tax.module';
 import { ShippingModule } from './shipping/shipping.module';
 import { ProductImageModule } from './product_image/product_image.module';
 import { RetrunRequestModule } from './retrun_request/retrun_request.module';
+import { ProductVariantImageModule } from './product_variant_image/product_variant_image.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { SchedulerModule } from './scheduler/scheduler.module';
+import { StoreSettingsModule } from './store-settings/store-settings.module';
+import { FlashSaleModule } from './flash-sale/flash-sale.module';
 
 @Module({
   imports: [
@@ -42,6 +47,7 @@ import { RetrunRequestModule } from './retrun_request/retrun_request.module';
         limit: 200, // max 200 requests per minute
       },
     ]),
+    ScheduleModule.forRoot(),
     CommonModule,
     MailModule,
     AuthModule,
@@ -65,6 +71,10 @@ import { RetrunRequestModule } from './retrun_request/retrun_request.module';
     ShippingModule,
     ProductImageModule,
     RetrunRequestModule,
+    ProductVariantImageModule,
+    SchedulerModule,
+    StoreSettingsModule,
+    FlashSaleModule,
   ],
   controllers: [AppController],
   providers: [
