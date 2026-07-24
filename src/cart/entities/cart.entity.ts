@@ -28,6 +28,14 @@ export type CartWithItems = Prisma.CartGetPayload<{
 export type CartItemWithProduct = CartWithItems['items'][number];
 
 export interface FormattedCartItem extends CartItemWithProduct {
+  originalPrice: number;
+  flashPrice: number | null;
+  flashSaleId: number | null;
+  flashSaleName?: string | null;
+  flashEndTime?: Date | null;
+  effectivePrice: number;
+  isOnFlashSale: boolean;
+  savings: number;
   subtotal: number;
 }
 
@@ -37,6 +45,7 @@ export interface FormattedCart {
   items: FormattedCartItem[];
   totalItems: number;
   totalAmount: number;
+  totalSavings: number;
   taxAmount: number;
   shippingAmount: number;
   grandTotal: number;

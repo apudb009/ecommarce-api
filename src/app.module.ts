@@ -31,6 +31,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { StoreSettingsModule } from './store-settings/store-settings.module';
 import { FlashSaleModule } from './flash-sale/flash-sale.module';
+import { OrderTrackingModule } from './order-tracking/order-tracking.module';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { FlashSaleModule } from './flash-sale/flash-sale.module';
     SchedulerModule,
     StoreSettingsModule,
     FlashSaleModule,
+    OrderTrackingModule,
   ],
   controllers: [AppController],
   providers: [

@@ -77,7 +77,8 @@ export const ModelName = {
   VariantImage: 'VariantImage',
   StoreSetting: 'StoreSetting',
   FlashSale: 'FlashSale',
-  FlashSaleProduct: 'FlashSaleProduct'
+  FlashSaleProduct: 'FlashSaleProduct',
+  OrderTracking: 'OrderTracking'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -179,6 +180,7 @@ export type CartScalarFieldEnum = (typeof CartScalarFieldEnum)[keyof typeof Cart
 export const CartItemScalarFieldEnum = {
   id: 'id',
   quantity: 'quantity',
+  flashSaleId: 'flashSaleId',
   cartId: 'cartId',
   productId: 'productId',
   variantId: 'variantId'
@@ -201,7 +203,8 @@ export const OrderScalarFieldEnum = {
   userId: 'userId',
   addressId: 'addressId',
   discountAmount: 'discountAmount',
-  couponCode: 'couponCode'
+  couponCode: 'couponCode',
+  trackingNumber: 'trackingNumber'
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
@@ -210,8 +213,10 @@ export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof Or
 export const OrderItemScalarFieldEnum = {
   id: 'id',
   quantity: 'quantity',
+  salePrice: 'salePrice',
   unitPrice: 'unitPrice',
   total: 'total',
+  flashSaleId: 'flashSaleId',
   orderId: 'orderId',
   productId: 'productId',
   productName: 'productName',
@@ -447,6 +452,18 @@ export const FlashSaleProductScalarFieldEnum = {
 } as const
 
 export type FlashSaleProductScalarFieldEnum = (typeof FlashSaleProductScalarFieldEnum)[keyof typeof FlashSaleProductScalarFieldEnum]
+
+
+export const OrderTrackingScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  message: 'message',
+  location: 'location',
+  createdAt: 'createdAt',
+  orderId: 'orderId'
+} as const
+
+export type OrderTrackingScalarFieldEnum = (typeof OrderTrackingScalarFieldEnum)[keyof typeof OrderTrackingScalarFieldEnum]
 
 
 export const SortOrder = {

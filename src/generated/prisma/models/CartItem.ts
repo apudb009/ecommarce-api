@@ -29,6 +29,7 @@ export type AggregateCartItem = {
 export type CartItemAvgAggregateOutputType = {
   id: number | null
   quantity: number | null
+  flashSaleId: number | null
   cartId: number | null
   productId: number | null
   variantId: number | null
@@ -37,6 +38,7 @@ export type CartItemAvgAggregateOutputType = {
 export type CartItemSumAggregateOutputType = {
   id: number | null
   quantity: number | null
+  flashSaleId: number | null
   cartId: number | null
   productId: number | null
   variantId: number | null
@@ -45,6 +47,7 @@ export type CartItemSumAggregateOutputType = {
 export type CartItemMinAggregateOutputType = {
   id: number | null
   quantity: number | null
+  flashSaleId: number | null
   cartId: number | null
   productId: number | null
   variantId: number | null
@@ -53,6 +56,7 @@ export type CartItemMinAggregateOutputType = {
 export type CartItemMaxAggregateOutputType = {
   id: number | null
   quantity: number | null
+  flashSaleId: number | null
   cartId: number | null
   productId: number | null
   variantId: number | null
@@ -61,6 +65,7 @@ export type CartItemMaxAggregateOutputType = {
 export type CartItemCountAggregateOutputType = {
   id: number
   quantity: number
+  flashSaleId: number
   cartId: number
   productId: number
   variantId: number
@@ -71,6 +76,7 @@ export type CartItemCountAggregateOutputType = {
 export type CartItemAvgAggregateInputType = {
   id?: true
   quantity?: true
+  flashSaleId?: true
   cartId?: true
   productId?: true
   variantId?: true
@@ -79,6 +85,7 @@ export type CartItemAvgAggregateInputType = {
 export type CartItemSumAggregateInputType = {
   id?: true
   quantity?: true
+  flashSaleId?: true
   cartId?: true
   productId?: true
   variantId?: true
@@ -87,6 +94,7 @@ export type CartItemSumAggregateInputType = {
 export type CartItemMinAggregateInputType = {
   id?: true
   quantity?: true
+  flashSaleId?: true
   cartId?: true
   productId?: true
   variantId?: true
@@ -95,6 +103,7 @@ export type CartItemMinAggregateInputType = {
 export type CartItemMaxAggregateInputType = {
   id?: true
   quantity?: true
+  flashSaleId?: true
   cartId?: true
   productId?: true
   variantId?: true
@@ -103,6 +112,7 @@ export type CartItemMaxAggregateInputType = {
 export type CartItemCountAggregateInputType = {
   id?: true
   quantity?: true
+  flashSaleId?: true
   cartId?: true
   productId?: true
   variantId?: true
@@ -198,6 +208,7 @@ export type CartItemGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 export type CartItemGroupByOutputType = {
   id: number
   quantity: number
+  flashSaleId: number | null
   cartId: number
   productId: number
   variantId: number | null
@@ -229,6 +240,7 @@ export type CartItemWhereInput = {
   NOT?: Prisma.CartItemWhereInput | Prisma.CartItemWhereInput[]
   id?: Prisma.IntFilter<"CartItem"> | number
   quantity?: Prisma.IntFilter<"CartItem"> | number
+  flashSaleId?: Prisma.IntNullableFilter<"CartItem"> | number | null
   cartId?: Prisma.IntFilter<"CartItem"> | number
   productId?: Prisma.IntFilter<"CartItem"> | number
   variantId?: Prisma.IntNullableFilter<"CartItem"> | number | null
@@ -240,6 +252,7 @@ export type CartItemWhereInput = {
 export type CartItemOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  flashSaleId?: Prisma.SortOrderInput | Prisma.SortOrder
   cartId?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   variantId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -255,6 +268,7 @@ export type CartItemWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.CartItemWhereInput[]
   NOT?: Prisma.CartItemWhereInput | Prisma.CartItemWhereInput[]
   quantity?: Prisma.IntFilter<"CartItem"> | number
+  flashSaleId?: Prisma.IntNullableFilter<"CartItem"> | number | null
   cartId?: Prisma.IntFilter<"CartItem"> | number
   productId?: Prisma.IntFilter<"CartItem"> | number
   variantId?: Prisma.IntNullableFilter<"CartItem"> | number | null
@@ -266,6 +280,7 @@ export type CartItemWhereUniqueInput = Prisma.AtLeast<{
 export type CartItemOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  flashSaleId?: Prisma.SortOrderInput | Prisma.SortOrder
   cartId?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   variantId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -282,6 +297,7 @@ export type CartItemScalarWhereWithAggregatesInput = {
   NOT?: Prisma.CartItemScalarWhereWithAggregatesInput | Prisma.CartItemScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"CartItem"> | number
   quantity?: Prisma.IntWithAggregatesFilter<"CartItem"> | number
+  flashSaleId?: Prisma.IntNullableWithAggregatesFilter<"CartItem"> | number | null
   cartId?: Prisma.IntWithAggregatesFilter<"CartItem"> | number
   productId?: Prisma.IntWithAggregatesFilter<"CartItem"> | number
   variantId?: Prisma.IntNullableWithAggregatesFilter<"CartItem"> | number | null
@@ -289,6 +305,7 @@ export type CartItemScalarWhereWithAggregatesInput = {
 
 export type CartItemCreateInput = {
   quantity?: number
+  flashSaleId?: number | null
   cart: Prisma.CartCreateNestedOneWithoutItemsInput
   product: Prisma.ProductCreateNestedOneWithoutCartItemsInput
   variant?: Prisma.ProductVariantCreateNestedOneWithoutCartItemsInput
@@ -297,6 +314,7 @@ export type CartItemCreateInput = {
 export type CartItemUncheckedCreateInput = {
   id?: number
   quantity?: number
+  flashSaleId?: number | null
   cartId: number
   productId: number
   variantId?: number | null
@@ -304,6 +322,7 @@ export type CartItemUncheckedCreateInput = {
 
 export type CartItemUpdateInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  flashSaleId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   cart?: Prisma.CartUpdateOneRequiredWithoutItemsNestedInput
   product?: Prisma.ProductUpdateOneRequiredWithoutCartItemsNestedInput
   variant?: Prisma.ProductVariantUpdateOneWithoutCartItemsNestedInput
@@ -312,6 +331,7 @@ export type CartItemUpdateInput = {
 export type CartItemUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  flashSaleId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   cartId?: Prisma.IntFieldUpdateOperationsInput | number
   productId?: Prisma.IntFieldUpdateOperationsInput | number
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -320,6 +340,7 @@ export type CartItemUncheckedUpdateInput = {
 export type CartItemCreateManyInput = {
   id?: number
   quantity?: number
+  flashSaleId?: number | null
   cartId: number
   productId: number
   variantId?: number | null
@@ -327,11 +348,13 @@ export type CartItemCreateManyInput = {
 
 export type CartItemUpdateManyMutationInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  flashSaleId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type CartItemUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  flashSaleId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   cartId?: Prisma.IntFieldUpdateOperationsInput | number
   productId?: Prisma.IntFieldUpdateOperationsInput | number
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -355,6 +378,7 @@ export type CartItemCartIdProductIdCompoundUniqueInput = {
 export type CartItemCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  flashSaleId?: Prisma.SortOrder
   cartId?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   variantId?: Prisma.SortOrder
@@ -363,6 +387,7 @@ export type CartItemCountOrderByAggregateInput = {
 export type CartItemAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  flashSaleId?: Prisma.SortOrder
   cartId?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   variantId?: Prisma.SortOrder
@@ -371,6 +396,7 @@ export type CartItemAvgOrderByAggregateInput = {
 export type CartItemMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  flashSaleId?: Prisma.SortOrder
   cartId?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   variantId?: Prisma.SortOrder
@@ -379,6 +405,7 @@ export type CartItemMaxOrderByAggregateInput = {
 export type CartItemMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  flashSaleId?: Prisma.SortOrder
   cartId?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   variantId?: Prisma.SortOrder
@@ -387,6 +414,7 @@ export type CartItemMinOrderByAggregateInput = {
 export type CartItemSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  flashSaleId?: Prisma.SortOrder
   cartId?: Prisma.SortOrder
   productId?: Prisma.SortOrder
   variantId?: Prisma.SortOrder
@@ -528,6 +556,7 @@ export type CartItemUncheckedUpdateManyWithoutVariantNestedInput = {
 
 export type CartItemCreateWithoutProductInput = {
   quantity?: number
+  flashSaleId?: number | null
   cart: Prisma.CartCreateNestedOneWithoutItemsInput
   variant?: Prisma.ProductVariantCreateNestedOneWithoutCartItemsInput
 }
@@ -535,6 +564,7 @@ export type CartItemCreateWithoutProductInput = {
 export type CartItemUncheckedCreateWithoutProductInput = {
   id?: number
   quantity?: number
+  flashSaleId?: number | null
   cartId: number
   variantId?: number | null
 }
@@ -571,6 +601,7 @@ export type CartItemScalarWhereInput = {
   NOT?: Prisma.CartItemScalarWhereInput | Prisma.CartItemScalarWhereInput[]
   id?: Prisma.IntFilter<"CartItem"> | number
   quantity?: Prisma.IntFilter<"CartItem"> | number
+  flashSaleId?: Prisma.IntNullableFilter<"CartItem"> | number | null
   cartId?: Prisma.IntFilter<"CartItem"> | number
   productId?: Prisma.IntFilter<"CartItem"> | number
   variantId?: Prisma.IntNullableFilter<"CartItem"> | number | null
@@ -578,6 +609,7 @@ export type CartItemScalarWhereInput = {
 
 export type CartItemCreateWithoutCartInput = {
   quantity?: number
+  flashSaleId?: number | null
   product: Prisma.ProductCreateNestedOneWithoutCartItemsInput
   variant?: Prisma.ProductVariantCreateNestedOneWithoutCartItemsInput
 }
@@ -585,6 +617,7 @@ export type CartItemCreateWithoutCartInput = {
 export type CartItemUncheckedCreateWithoutCartInput = {
   id?: number
   quantity?: number
+  flashSaleId?: number | null
   productId: number
   variantId?: number | null
 }
@@ -617,6 +650,7 @@ export type CartItemUpdateManyWithWhereWithoutCartInput = {
 
 export type CartItemCreateWithoutVariantInput = {
   quantity?: number
+  flashSaleId?: number | null
   cart: Prisma.CartCreateNestedOneWithoutItemsInput
   product: Prisma.ProductCreateNestedOneWithoutCartItemsInput
 }
@@ -624,6 +658,7 @@ export type CartItemCreateWithoutVariantInput = {
 export type CartItemUncheckedCreateWithoutVariantInput = {
   id?: number
   quantity?: number
+  flashSaleId?: number | null
   cartId: number
   productId: number
 }
@@ -657,12 +692,14 @@ export type CartItemUpdateManyWithWhereWithoutVariantInput = {
 export type CartItemCreateManyProductInput = {
   id?: number
   quantity?: number
+  flashSaleId?: number | null
   cartId: number
   variantId?: number | null
 }
 
 export type CartItemUpdateWithoutProductInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  flashSaleId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   cart?: Prisma.CartUpdateOneRequiredWithoutItemsNestedInput
   variant?: Prisma.ProductVariantUpdateOneWithoutCartItemsNestedInput
 }
@@ -670,6 +707,7 @@ export type CartItemUpdateWithoutProductInput = {
 export type CartItemUncheckedUpdateWithoutProductInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  flashSaleId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   cartId?: Prisma.IntFieldUpdateOperationsInput | number
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
@@ -677,6 +715,7 @@ export type CartItemUncheckedUpdateWithoutProductInput = {
 export type CartItemUncheckedUpdateManyWithoutProductInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  flashSaleId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   cartId?: Prisma.IntFieldUpdateOperationsInput | number
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
@@ -684,12 +723,14 @@ export type CartItemUncheckedUpdateManyWithoutProductInput = {
 export type CartItemCreateManyCartInput = {
   id?: number
   quantity?: number
+  flashSaleId?: number | null
   productId: number
   variantId?: number | null
 }
 
 export type CartItemUpdateWithoutCartInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  flashSaleId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   product?: Prisma.ProductUpdateOneRequiredWithoutCartItemsNestedInput
   variant?: Prisma.ProductVariantUpdateOneWithoutCartItemsNestedInput
 }
@@ -697,6 +738,7 @@ export type CartItemUpdateWithoutCartInput = {
 export type CartItemUncheckedUpdateWithoutCartInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  flashSaleId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   productId?: Prisma.IntFieldUpdateOperationsInput | number
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
@@ -704,6 +746,7 @@ export type CartItemUncheckedUpdateWithoutCartInput = {
 export type CartItemUncheckedUpdateManyWithoutCartInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  flashSaleId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   productId?: Prisma.IntFieldUpdateOperationsInput | number
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
@@ -711,12 +754,14 @@ export type CartItemUncheckedUpdateManyWithoutCartInput = {
 export type CartItemCreateManyVariantInput = {
   id?: number
   quantity?: number
+  flashSaleId?: number | null
   cartId: number
   productId: number
 }
 
 export type CartItemUpdateWithoutVariantInput = {
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  flashSaleId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   cart?: Prisma.CartUpdateOneRequiredWithoutItemsNestedInput
   product?: Prisma.ProductUpdateOneRequiredWithoutCartItemsNestedInput
 }
@@ -724,6 +769,7 @@ export type CartItemUpdateWithoutVariantInput = {
 export type CartItemUncheckedUpdateWithoutVariantInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  flashSaleId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   cartId?: Prisma.IntFieldUpdateOperationsInput | number
   productId?: Prisma.IntFieldUpdateOperationsInput | number
 }
@@ -731,6 +777,7 @@ export type CartItemUncheckedUpdateWithoutVariantInput = {
 export type CartItemUncheckedUpdateManyWithoutVariantInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.IntFieldUpdateOperationsInput | number
+  flashSaleId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   cartId?: Prisma.IntFieldUpdateOperationsInput | number
   productId?: Prisma.IntFieldUpdateOperationsInput | number
 }
@@ -740,6 +787,7 @@ export type CartItemUncheckedUpdateManyWithoutVariantInput = {
 export type CartItemSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   quantity?: boolean
+  flashSaleId?: boolean
   cartId?: boolean
   productId?: boolean
   variantId?: boolean
@@ -751,6 +799,7 @@ export type CartItemSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type CartItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   quantity?: boolean
+  flashSaleId?: boolean
   cartId?: boolean
   productId?: boolean
   variantId?: boolean
@@ -762,6 +811,7 @@ export type CartItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
 export type CartItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   quantity?: boolean
+  flashSaleId?: boolean
   cartId?: boolean
   productId?: boolean
   variantId?: boolean
@@ -773,12 +823,13 @@ export type CartItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
 export type CartItemSelectScalar = {
   id?: boolean
   quantity?: boolean
+  flashSaleId?: boolean
   cartId?: boolean
   productId?: boolean
   variantId?: boolean
 }
 
-export type CartItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "quantity" | "cartId" | "productId" | "variantId", ExtArgs["result"]["cartItem"]>
+export type CartItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "quantity" | "flashSaleId" | "cartId" | "productId" | "variantId", ExtArgs["result"]["cartItem"]>
 export type CartItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cart?: boolean | Prisma.CartDefaultArgs<ExtArgs>
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
@@ -805,6 +856,7 @@ export type $CartItemPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     quantity: number
+    flashSaleId: number | null
     cartId: number
     productId: number
     variantId: number | null
@@ -1236,6 +1288,7 @@ export interface Prisma__CartItemClient<T, Null = never, ExtArgs extends runtime
 export interface CartItemFieldRefs {
   readonly id: Prisma.FieldRef<"CartItem", 'Int'>
   readonly quantity: Prisma.FieldRef<"CartItem", 'Int'>
+  readonly flashSaleId: Prisma.FieldRef<"CartItem", 'Int'>
   readonly cartId: Prisma.FieldRef<"CartItem", 'Int'>
   readonly productId: Prisma.FieldRef<"CartItem", 'Int'>
   readonly variantId: Prisma.FieldRef<"CartItem", 'Int'>

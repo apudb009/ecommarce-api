@@ -65,7 +65,7 @@ export class PaymentService {
     }
 
     // 4. convert to cents (Stripe uses smallest currency unit)
-    const amount = Number(order.totalAmount);
+    const amount = Math.round(Number(order.grandTotalAmount));
 
     // 5. create Stripe PaymentIntent
     const paymentIntent = await this.stripe.paymentIntents.create({

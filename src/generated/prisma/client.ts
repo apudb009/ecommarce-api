@@ -174,3 +174,8 @@ export type FlashSale = Prisma.FlashSaleModel
  * 
  */
 export type FlashSaleProduct = Prisma.FlashSaleProductModel
+/**
+ * Model OrderTracking
+ * 
+ */
+export type OrderTracking = Prisma.OrderTrackingModel

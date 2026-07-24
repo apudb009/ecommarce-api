@@ -19,6 +19,7 @@ import { TaxService } from 'src/tax/tax.service';
 import { TaxType } from 'src/generated/prisma/enums';
 import { ShippingService } from 'src/shipping/shipping.service';
 import { ProductVariant } from 'src/generated/prisma/client';
+import { FlashSaleService } from 'src/flash-sale/flash-sale.service';
 
 @Injectable()
 export class CartService {
@@ -28,6 +29,7 @@ export class CartService {
     private coupon: CouponService,
     private tax: TaxService,
     private shipping: ShippingService,
+    private flashSale: FlashSaleService,
   ) {}
 
   // ── GET OR CREATE CART ─────────────────────────────
@@ -379,6 +381,7 @@ export class CartService {
               price: true,
               images: true,
               isActive: true,
+              slug: true,
               stock: true,
               category: {
                 select: {
@@ -399,23 +402,37 @@ export class CartService {
 
   // ── HELPER — calculate totals ──────────────────────
   private async formatCart(cart: CartWithItems): Promise<FormattedCart> {
-    const items: FormattedCartItem[] = cart.items.map(
-      (item: CartItemWithProduct) => {
+    let totalAmount = 0;
+    let totalItems = 0;
+    let totalSaving = 0;
+
+    const items: FormattedCartItem[] = await Promise.all(
+      cart.items.map(async (item: CartItemWithProduct) => {
+        const originalPrice = Number(item.variant?.price ?? item.product.price);
+
+        // ← check flash sale for this product
+        const flash = await this.flashSale.getFlashPriceInfo(item.product.id);
+
+        const effectivePrice = flash?.price ?? originalPrice;
+        const subtotal = effectivePrice * item.quantity;
+
+        totalSaving += originalPrice - effectivePrice;
+        totalAmount += subtotal;
+        totalItems += item.quantity;
+
         return {
           ...item,
-          subtotal: Number(item.product.price) * item.quantity,
+          flashSaleId: flash?.saleId ?? null,
+          originalPrice,
+          flashPrice: flash?.price ?? null, // null if no sale
+          effectivePrice, // actual price used
+          isOnFlashSale: flash !== null,
+          flashEndTime: flash?.endTime,
+          flashSaleName: flash?.saleName,
+          subtotal: Number(subtotal.toFixed(2)),
+          savings: Number((originalPrice - effectivePrice).toFixed(2)),
         };
-      },
-    );
-
-    const totalQuantity = items.reduce(
-      (acc: number, item: FormattedCartItem) => acc + item.quantity,
-      0,
-    );
-
-    const totalAmount = items.reduce(
-      (acc: number, item: FormattedCartItem) => acc + item.subtotal,
-      0,
+      }),
     );
 
     //Get Active tax
@@ -441,8 +458,9 @@ export class CartService {
       id: cart.id,
       userId: cart.userId,
       items,
-      totalItems: totalQuantity,
+      totalItems,
       totalAmount,
+      totalSavings: Number(totalSaving.toFixed(2)),
       taxAmount,
       grandTotal,
       shippingAmount,

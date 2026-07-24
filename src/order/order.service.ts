@@ -19,6 +19,8 @@ import { MailService } from 'src/mail/mail.service';
 import { InvoiceService } from 'src/invoice/invoice.service';
 import { CouponService } from 'src/coupon/coupon.service';
 import { NotificationService } from 'src/notification/notification.service';
+import { OrderTrackingService } from 'src/order-tracking/order-tracking.service';
+import { FlashSaleService } from 'src/flash-sale/flash-sale.service';
 
 @Injectable()
 export class OrderService {
@@ -31,6 +33,8 @@ export class OrderService {
     private invoice: InvoiceService,
     private coupon: CouponService,
     private notification: NotificationService,
+    private orderTracking: OrderTrackingService,
+    private flashSale: FlashSaleService,
   ) {}
 
   // ── PLACE ORDER FROM CART ──────────────────────────
@@ -55,7 +59,6 @@ export class OrderService {
         cart.totalAmount,
       );
       discountAmount = couponResult.discount;
-      //finalAmount = couponResult.finalAmount;
     }
 
     //Check each product for stock and active
@@ -93,6 +96,8 @@ export class OrderService {
               total: item.subtotal,
               productName: item.product.name,
               variantId: item.variantId,
+              salePrice: item.flashPrice ?? 0,
+              flashSaleId: item.flashSaleId,
             })),
           },
         },
@@ -133,8 +138,6 @@ export class OrderService {
       await this.coupon.markAsUsed(createOrderDto.couponCode, userId, order.id);
     }
 
-    //console.log(order);
-
     //Clear cart
     await this.cart.clearCart(userId);
 
@@ -169,6 +172,10 @@ export class OrderService {
           postalCode: order.address.postalCode,
         },
       })
+      .catch(() => {});
+
+    this.orderTracking
+      .addTrackingEvent(order.id, OrderStatus.PENDING)
       .catch(() => {});
 
     // auto-create invoice after order
@@ -415,6 +422,15 @@ export class OrderService {
       })
       .catch(() => {});
 
+    this.orderTracking
+      .addTrackingEvent(
+        id,
+        status,
+        updateOrderDto?.location,
+        updateOrderDto?.trackingMessage,
+      )
+      .catch(() => {});
+
     return updatedOrder;
   }
 
@@ -435,6 +451,7 @@ export class OrderService {
           id: true,
           productId: true,
           quantity: true,
+          salePrice: true,
           unitPrice: true,
           total: true,
           productName: true,
@@ -443,6 +460,7 @@ export class OrderService {
             select: {
               id: true,
               name: true,
+              value: true,
             },
           },
         },

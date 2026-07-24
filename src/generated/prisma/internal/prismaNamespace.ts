@@ -410,7 +410,8 @@ export const ModelName = {
   VariantImage: 'VariantImage',
   StoreSetting: 'StoreSetting',
   FlashSale: 'FlashSale',
-  FlashSaleProduct: 'FlashSaleProduct'
+  FlashSaleProduct: 'FlashSaleProduct',
+  OrderTracking: 'OrderTracking'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -426,7 +427,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "address" | "category" | "product" | "review" | "cart" | "cartItem" | "order" | "orderItem" | "payment" | "banner" | "invoice" | "coupon" | "couponUse" | "wishlist" | "wishlistItem" | "newsletter" | "notification" | "tax" | "shipping" | "productImage" | "returnRequest" | "productVariant" | "variantImage" | "storeSetting" | "flashSale" | "flashSaleProduct"
+    modelProps: "user" | "address" | "category" | "product" | "review" | "cart" | "cartItem" | "order" | "orderItem" | "payment" | "banner" | "invoice" | "coupon" | "couponUse" | "wishlist" | "wishlistItem" | "newsletter" | "notification" | "tax" | "shipping" | "productImage" | "returnRequest" | "productVariant" | "variantImage" | "storeSetting" | "flashSale" | "flashSaleProduct" | "orderTracking"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2428,6 +2429,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    OrderTracking: {
+      payload: Prisma.$OrderTrackingPayload<ExtArgs>
+      fields: Prisma.OrderTrackingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OrderTrackingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderTrackingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OrderTrackingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderTrackingPayload>
+        }
+        findFirst: {
+          args: Prisma.OrderTrackingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderTrackingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OrderTrackingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderTrackingPayload>
+        }
+        findMany: {
+          args: Prisma.OrderTrackingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderTrackingPayload>[]
+        }
+        create: {
+          args: Prisma.OrderTrackingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderTrackingPayload>
+        }
+        createMany: {
+          args: Prisma.OrderTrackingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OrderTrackingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderTrackingPayload>[]
+        }
+        delete: {
+          args: Prisma.OrderTrackingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderTrackingPayload>
+        }
+        update: {
+          args: Prisma.OrderTrackingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderTrackingPayload>
+        }
+        deleteMany: {
+          args: Prisma.OrderTrackingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OrderTrackingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OrderTrackingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderTrackingPayload>[]
+        }
+        upsert: {
+          args: Prisma.OrderTrackingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OrderTrackingPayload>
+        }
+        aggregate: {
+          args: Prisma.OrderTrackingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOrderTracking>
+        }
+        groupBy: {
+          args: Prisma.OrderTrackingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrderTrackingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OrderTrackingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OrderTrackingCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2550,6 +2625,7 @@ export type CartScalarFieldEnum = (typeof CartScalarFieldEnum)[keyof typeof Cart
 export const CartItemScalarFieldEnum = {
   id: 'id',
   quantity: 'quantity',
+  flashSaleId: 'flashSaleId',
   cartId: 'cartId',
   productId: 'productId',
   variantId: 'variantId'
@@ -2572,7 +2648,8 @@ export const OrderScalarFieldEnum = {
   userId: 'userId',
   addressId: 'addressId',
   discountAmount: 'discountAmount',
-  couponCode: 'couponCode'
+  couponCode: 'couponCode',
+  trackingNumber: 'trackingNumber'
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
@@ -2581,8 +2658,10 @@ export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof Or
 export const OrderItemScalarFieldEnum = {
   id: 'id',
   quantity: 'quantity',
+  salePrice: 'salePrice',
   unitPrice: 'unitPrice',
   total: 'total',
+  flashSaleId: 'flashSaleId',
   orderId: 'orderId',
   productId: 'productId',
   productName: 'productName',
@@ -2818,6 +2897,18 @@ export const FlashSaleProductScalarFieldEnum = {
 } as const
 
 export type FlashSaleProductScalarFieldEnum = (typeof FlashSaleProductScalarFieldEnum)[keyof typeof FlashSaleProductScalarFieldEnum]
+
+
+export const OrderTrackingScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  message: 'message',
+  location: 'location',
+  createdAt: 'createdAt',
+  orderId: 'orderId'
+} as const
+
+export type OrderTrackingScalarFieldEnum = (typeof OrderTrackingScalarFieldEnum)[keyof typeof OrderTrackingScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -3189,6 +3280,7 @@ export type GlobalOmitConfig = {
   storeSetting?: Prisma.StoreSettingOmit
   flashSale?: Prisma.FlashSaleOmit
   flashSaleProduct?: Prisma.FlashSaleProductOmit
+  orderTracking?: Prisma.OrderTrackingOmit
 }
 
 /* Types for Logging */

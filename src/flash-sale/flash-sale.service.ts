@@ -129,7 +129,6 @@ export class FlashSaleService {
   // ── ADD PRODUCTS ───────────────────────────────────
   async addProducts(id: number, productIds: number[]) {
     await this.findOne(id);
-    console.log(id, productIds);
     await this.prisma.flashSaleProduct.createMany({
       data: productIds.map((productId) => ({ flashSaleId: id, productId })),
       skipDuplicates: true,
@@ -151,6 +150,53 @@ export class FlashSaleService {
     });
 
     return await this.findOne(id);
+  }
+
+  // ── GET FLASH PRICE + SALE INFO ────────────────────
+  async getFlashPriceInfo(productId: number): Promise<{
+    price: number;
+    saleId: number;
+    saleName: string;
+    discountType: string;
+    discountValue: number;
+    endTime: Date;
+  } | null> {
+    const now = new Date();
+
+    const sale = await this.prisma.flashSale.findFirst({
+      where: {
+        isActive: true,
+        startTime: { lte: now },
+        endTime: { gte: now },
+        products: { some: { productId } },
+      },
+    });
+
+    if (!sale) return null;
+
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      select: { price: true },
+    });
+
+    if (!product) return null;
+
+    const original = Number(product.price);
+    const value = Number(sale.discountValue);
+
+    const price =
+      sale.discountType === 'PERCENTAGE'
+        ? Number((original - (original * value) / 100).toFixed(2))
+        : Math.max(0, original - value);
+
+    return {
+      price,
+      saleId: sale.id,
+      saleName: sale.name,
+      discountType: sale.discountType,
+      discountValue: value,
+      endTime: sale.endTime,
+    };
   }
 
   // ── GET FLASH PRICE (used in cart/order) ───────────

@@ -43,7 +43,7 @@ export class OrderController {
     return this.orderService.getMyOrders(req.user.sub, filterDto);
   }
 
-  // GET /api/orders/:id (admin only)
+  // GET /api/orders/:id (admin and customer only)
   @Get(':id')
   findOne(
     @Param('id', ParseIntPipe) id: number,

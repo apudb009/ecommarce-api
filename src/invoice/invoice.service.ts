@@ -112,7 +112,18 @@ export class InvoiceService {
       include: {
         order: {
           include: {
-            items: true,
+            items: {
+              include: {
+                product: true,
+                variant: {
+                  select: {
+                    id: true,
+                    name: true,
+                    value: true,
+                  },
+                },
+              },
+            },
             address: true,
             payment: true,
           },
@@ -268,6 +279,9 @@ export class InvoiceService {
       <tr>
         <td style="padding: 10px; border-bottom: 1px solid #f0f0f0;">
           ${item.productName}
+          <div style="font-size: 12px; color: #6b7280;">
+            ${item.variant ? `Variant: ${item.variant.name}-${item.variant.value}` : ''}
+          </div>
         </td>
         <td style="padding: 10px; border-bottom: 1px solid #f0f0f0; text-align: center;">
           ${item.quantity}

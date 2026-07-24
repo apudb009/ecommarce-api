@@ -4,7 +4,18 @@ export type InvoiceType = Prisma.InvoiceGetPayload<{
   include: {
     order: {
       include: {
-        items: true;
+        items: {
+          include: {
+            product: true;
+            variant: {
+              select: {
+                id: true;
+                name: true;
+                value: true;
+              };
+            };
+          };
+        };
         address: true;
         payment: true;
       };

@@ -8,6 +8,8 @@ import { PrismaService } from 'src/prisma.service';
 import { InvoiceModule } from 'src/invoice/invoice.module';
 import { CouponModule } from 'src/coupon/coupon.module';
 import { NotificationModule } from 'src/notification/notification.module';
+import { OrderTrackingModule } from 'src/order-tracking/order-tracking.module';
+import { FlashSaleModule } from 'src/flash-sale/flash-sale.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { NotificationModule } from 'src/notification/notification.module';
     InvoiceModule,
     CouponModule,
     NotificationModule,
+    OrderTrackingModule,
+    FlashSaleModule,
   ],
   controllers: [OrderController],
   providers: [OrderService, PrismaService],

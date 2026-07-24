@@ -124,6 +124,7 @@ model Cart {
 model CartItem {
   id       Int @id @default(autoincrement())
   quantity Int @default(1)
+  flashSaleId Int?
 
   cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
   cartId    Int
@@ -161,6 +162,8 @@ model Order {
   couponCode     String?
   couponUse      CouponUse?
   returnRequest  ReturnRequest?
+  trackingNumber String?        // optional carrier tracking number
+  tracking       OrderTracking[]
 }
 
 enum OrderStatus {
@@ -177,9 +180,10 @@ enum OrderStatus {
 model OrderItem {
   id        Int     @id @default(autoincrement())
   quantity  Int
+  salePrice Decimal @db.Decimal(10, 2) @default(0)
   unitPrice Decimal @db.Decimal(10, 2)  // price AT time of order (snapshot)
   total     Decimal @db.Decimal(10, 2)
-
+  flashSaleId   Int?
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId   Int
   product   Product @relation(fields: [productId], references: [id])
@@ -478,4 +482,16 @@ model FlashSaleProduct {
   productId   Int
 
   @@id([flashSaleId, productId])
+}
+
+// ── ORDER TRACKING ─────────────────────────────────
+model OrderTracking {
+  id        Int      @id @default(autoincrement())
+  status    String
+  message   String
+  location  String?  // "Berlin Warehouse", "In Transit to Munich"
+  createdAt DateTime @default(now())
+
+  order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId Int
 }
