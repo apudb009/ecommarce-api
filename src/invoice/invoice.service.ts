@@ -92,6 +92,7 @@ export class InvoiceService {
           select: {
             id: true,
             totalAmount: true,
+            grandTotalAmount: true,
             status: true,
             createdAt: true,
           },
@@ -287,7 +288,7 @@ export class InvoiceService {
           ${item.quantity}
         </td>
         <td style="padding: 10px; border-bottom: 1px solid #f0f0f0; text-align: right;">
-          $${Number(item.unitPrice).toFixed(2)}
+          $${Number(item.salePrice ?? item.unitPrice).toFixed(2)}
         </td>
         <td style="padding: 10px; border-bottom: 1px solid #f0f0f0; text-align: right;">
           $${Number(item.total).toFixed(2)}
