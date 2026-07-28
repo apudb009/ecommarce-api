@@ -29,6 +29,9 @@ services:
       JWT_REFRESH_SECRET:     ${JWT_REFRESH_SECRET}
       JWT_ACCESS_EXPIRES:     ${JWT_ACCESS_EXPIRES}
       JWT_REFRESH_EXPIRES:    ${JWT_REFRESH_EXPIRES}
+      CLOUDINARY_CLOUD_NAME:  ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY:     ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET:  ${CLOUDINARY_API_SECRET}
       STRIPE_SECRET_KEY:      ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET:  ${STRIPE_WEBHOOK_SECRET}
       MAIL_HOST:              ${MAIL_HOST}
@@ -41,8 +44,6 @@ services:
     depends_on:
       db:
         condition: service_healthy  # wait for DB to be ready
-    command: >
-      sh -c "npx prisma migrate deploy && node dist/src/main.js"
 
 volumes:
   postgres_data:

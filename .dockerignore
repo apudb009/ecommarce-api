@@ -2,6 +2,9 @@ node_modules
 dist
 .env
 .env.*
-*.lock
-.git
+*.log
 coverage
+.git
+.gitignore
+README.md
+docker-compose*.yml
