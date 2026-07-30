@@ -75,7 +75,7 @@ export class ProductHelper {
         minPrice === undefined && {
           price: { lte: maxPrice },
         }),
-      ...(resolvedCategoryId && { resolvedCategoryId }),
+      ...(resolvedCategoryId && { categoryId: resolvedCategoryId }),
 
       // ── in stock ──────────────────────────────────
       ...(inStock && { stock: { gt: 0 } }),
@@ -128,19 +128,6 @@ export class ProductHelper {
 
     // calculate average rating for each product
     const productsWithAvgRating = await this.withAvgRating(products, minRating);
-
-    /*await Promise.all(
-      products.map(async (product) => {
-        const avgRating = await this.prisma.review.aggregate({
-          _avg: { rating: true },
-          where: { productId: product.id },
-        });
-        return {
-          ...product,
-          avgRating: avgRating._avg.rating,
-        };
-      }),
-    );*/
 
     return {
       data: productsWithAvgRating,
