@@ -34,6 +34,7 @@ model User {
   wishlist Wishlist?
   notifications Notification[]
   returnRequests ReturnRequest[]
+  passwordResetTokens PasswordResetToken[]
 }
 
 enum Role {
@@ -494,4 +495,16 @@ model OrderTracking {
 
   order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId Int
+}
+
+// ── PASSWORD RESET TOKEN ─────────────────────────────────
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
 }

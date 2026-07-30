@@ -7,6 +7,8 @@ import { AuthGuard } from './auth.guard';
 import { UserModule } from 'src/user/user.module';
 import { RefreshGuard } from './refresh.guard';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PrismaService } from 'src/prisma.service';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
@@ -24,12 +26,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         },
       }),
     }),
+    MailModule,
   ],
   providers: [
     AuthService,
     { provide: APP_GUARD, useClass: AuthGuard },
     RefreshGuard,
     ConfigService,
+    PrismaService,
   ],
   controllers: [AuthController],
 })

@@ -78,7 +78,8 @@ export const ModelName = {
   StoreSetting: 'StoreSetting',
   FlashSale: 'FlashSale',
   FlashSaleProduct: 'FlashSaleProduct',
-  OrderTracking: 'OrderTracking'
+  OrderTracking: 'OrderTracking',
+  PasswordResetToken: 'PasswordResetToken'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -464,6 +465,18 @@ export const OrderTrackingScalarFieldEnum = {
 } as const
 
 export type OrderTrackingScalarFieldEnum = (typeof OrderTrackingScalarFieldEnum)[keyof typeof OrderTrackingScalarFieldEnum]
+
+
+export const PasswordResetTokenScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  expiresAt: 'expiresAt',
+  used: 'used',
+  createdAt: 'createdAt',
+  userId: 'userId'
+} as const
+
+export type PasswordResetTokenScalarFieldEnum = (typeof PasswordResetTokenScalarFieldEnum)[keyof typeof PasswordResetTokenScalarFieldEnum]
 
 
 export const SortOrder = {

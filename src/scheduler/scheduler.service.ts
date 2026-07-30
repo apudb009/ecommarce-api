@@ -308,4 +308,20 @@ export class SchedulerService {
       this.logger.error('Database health check FAILED:', error);
     }
   }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async cleanupExpiredResetTokens() {
+    this.logger.log('Running: Cleanup expired reset tokens');
+
+    const result = await this.prisma.passwordResetToken.deleteMany({
+      where: {
+        OR: [
+          { expiresAt: { lte: new Date() } }, // expired
+          { used: true }, // already used
+        ],
+      },
+    });
+
+    this.logger.log(`Deleted ${result.count} expired/used reset tokens`);
+  }
 }

@@ -5,8 +5,9 @@ import {
   IsNumber,
   IsBoolean,
   Min,
+  IsArray,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 export class FilterProductDto {
   // pagination
@@ -50,6 +51,27 @@ export class FilterProductDto {
   @Type(() => Boolean)
   inStock?: boolean;
 
+  // ── variant filters ─────────────────────────────
+  @IsString()
+  @IsOptional()
+  variantName?: string; // e.g. "Color" or "Size"
+
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.split(',') : value,
+  )
+  @IsArray()
+  @IsString({ each: true })
+  variantValues?: string[]; // e.g. ["Red", "Blue"] or ["S", "M", "L"]
+
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.split(',') : value,
+  )
+  @IsArray()
+  @IsString({ each: true })
+  colors?: string[]; // hex colors e.g. ["#FF0000", "#0000FF"]
+
   // sorting
   @IsOptional()
   @IsString()
@@ -58,4 +80,16 @@ export class FilterProductDto {
   @IsOptional()
   @IsString()
   sortOrder?: 'asc' | 'desc' = 'desc';
+
+  // ── rating filter ────────────────────────────────
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  minRating?: number;
+
+  // ── category slug (alternative to categoryId) ───
+  @IsString()
+  @IsOptional()
+  categorySlug?: string;
 }

@@ -18,13 +18,12 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-
-    "cli":             "tsx --env-file=.env src/cli/cli.ts",
-    "admin:create":    "tsx --env-file=.env src/cli/cli.ts admin:create",
-    "user:list":       "tsx --env-file=.env src/cli/cli.ts user:list",
-    "password:reset":  "tsx --env-file=.env src/cli/cli.ts password:reset",
+    "cli": "tsx --env-file=.env src/cli/cli.ts",
+    "admin:create": "tsx --env-file=.env src/cli/cli.ts admin:create",
+    "user:list": "tsx --env-file=.env src/cli/cli.ts user:list",
+    "password:reset": "tsx --env-file=.env src/cli/cli.ts password:reset",
     "categories:seed": "tsx --env-file=.env src/cli/cli.ts categories:seed",
-    "products:seed":   "tsx --env-file=.env src/cli/cli.ts products:seed",
+    "products:seed": "tsx --env-file=.env src/cli/cli.ts products:seed",
     "products:import": "tsx --env-file=.env src/cli/cli.ts products:import"
   },
   "dependencies": {
@@ -43,6 +42,7 @@
     "class-validator": "^0.15.1",
     "cloudinary": "^2.10.0",
     "commander": "^15.0.0",
+    "crypto": "^1.0.1",
     "csv-parse": "^7.0.1",
     "joi": "^18.2.3",
     "multer": "^2.2.0",

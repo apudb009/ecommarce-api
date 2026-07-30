@@ -425,4 +425,237 @@ export class MailService {
       html,
     });
   }
+
+  // ── FORGOT PASSWORD EMAIL ──────────────────────────
+  async sendPasswordReset(data: {
+    to: string;
+    name: string;
+    resetLink: string;
+    expiresIn: string;
+  }) {
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8" />
+      <style>
+        body {
+          font-family: 'Helvetica Neue', Arial, sans-serif;
+          background: #f9fafb;
+          margin: 0;
+          padding: 0;
+        }
+        .container {
+          max-width: 560px;
+          margin: 40px auto;
+          background: white;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        }
+        .header {
+          background: linear-gradient(135deg, #2563eb, #1d4ed8);
+          padding: 32px;
+          text-align: center;
+        }
+        .header h1 {
+          color: white;
+          margin: 0;
+          font-size: 24px;
+          font-weight: 700;
+        }
+        .header p {
+          color: rgba(255,255,255,0.8);
+          margin: 8px 0 0;
+          font-size: 14px;
+        }
+        .body {
+          padding: 32px;
+        }
+        .body p {
+          color: #374151;
+          line-height: 1.6;
+          margin: 0 0 16px;
+        }
+        .btn {
+          display: block;
+          width: fit-content;
+          margin: 24px auto;
+          background: #2563eb;
+          color: white !important;
+          text-decoration: none;
+          padding: 14px 32px;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 16px;
+          text-align: center;
+        }
+        .btn:hover { background: #1d4ed8; }
+        .warning {
+          background: #fef9c3;
+          border: 1px solid #fde047;
+          border-radius: 8px;
+          padding: 12px 16px;
+          font-size: 13px;
+          color: #713f12;
+          margin: 20px 0;
+        }
+        .link-box {
+          background: #f3f4f6;
+          border-radius: 6px;
+          padding: 12px;
+          font-size: 12px;
+          color: #6b7280;
+          word-break: break-all;
+          margin-top: 16px;
+        }
+        .footer {
+          text-align: center;
+          padding: 20px 32px;
+          background: #f9fafb;
+          color: #9ca3af;
+          font-size: 12px;
+          border-top: 1px solid #f3f4f6;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🔐 Reset Your Password</h1>
+          <p>ShopApp Account Security</p>
+        </div>
+
+        <div class="body">
+          <p>Hi <strong>${data.name}</strong>,</p>
+
+          <p>
+            We received a request to reset the password for your ShopApp account.
+            Click the button below to create a new password.
+          </p>
+
+          <a href="${data.resetLink}" class="btn">
+            Reset My Password
+          </a>
+
+          <div class="warning">
+            ⏰ This link will expire in <strong>${data.expiresIn}</strong>.
+            If you did not request a password reset, you can safely ignore this email.
+          </div>
+
+          <p style="font-size: 13px; color: #6b7280;">
+            If the button doesn't work, copy and paste this link into your browser:
+          </p>
+          <div class="link-box">${data.resetLink}</div>
+        </div>
+
+        <div class="footer">
+          <p>© ${new Date().getFullYear()} ShopApp. All rights reserved.</p>
+          <p>This email was sent to ${data.to}</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+    await this.sendMail({
+      to: data.to,
+      subject: '🔐 Reset your ShopApp password',
+      html,
+    });
+  }
+
+  // ── PASSWORD CHANGED CONFIRMATION EMAIL ────────────
+  async sendPasswordChanged(data: { to: string; name: string }) {
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8" />
+      <style>
+        body {
+          font-family: 'Helvetica Neue', Arial, sans-serif;
+          background: #f9fafb;
+          margin: 0;
+          padding: 0;
+        }
+        .container {
+          max-width: 560px;
+          margin: 40px auto;
+          background: white;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        }
+        .header {
+          background: linear-gradient(135deg, #16a34a, #15803d);
+          padding: 32px;
+          text-align: center;
+        }
+        .header h1 { color: white; margin: 0; font-size: 24px; }
+        .body { padding: 32px; }
+        .body p { color: #374151; line-height: 1.6; margin: 0 0 16px; }
+        .alert {
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          border-radius: 8px;
+          padding: 12px 16px;
+          font-size: 13px;
+          color: #991b1b;
+          margin: 20px 0;
+        }
+        .btn {
+          display: block;
+          width: fit-content;
+          margin: 24px auto;
+          background: #2563eb;
+          color: white !important;
+          text-decoration: none;
+          padding: 14px 32px;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 15px;
+        }
+        .footer {
+          text-align: center;
+          padding: 20px;
+          background: #f9fafb;
+          color: #9ca3af;
+          font-size: 12px;
+          border-top: 1px solid #f3f4f6;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>✅ Password Changed</h1>
+        </div>
+        <div class="body">
+          <p>Hi <strong>${data.name}</strong>,</p>
+          <p>
+            Your ShopApp password has been successfully changed.
+          </p>
+          <div class="alert">
+            🚨 If you did not make this change, please contact us immediately
+            at <strong>support@shopapp.com</strong> or reset your password right away.
+          </div>
+          <a href="${this.config.get('FRONTEND_URL')}/login" class="btn">
+            Login to Your Account
+          </a>
+        </div>
+        <div class="footer">
+          © ${new Date().getFullYear()} ShopApp · ${data.to}
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+    await this.sendMail({
+      to: data.to,
+      subject: '✅ Your ShopApp password has been changed',
+      html,
+    });
+  }
 }

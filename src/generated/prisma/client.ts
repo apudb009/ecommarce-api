@@ -179,3 +179,8 @@ export type FlashSaleProduct = Prisma.FlashSaleProductModel
  * 
  */
 export type OrderTracking = Prisma.OrderTrackingModel
+/**
+ * Model PasswordResetToken
+ * 
+ */
+export type PasswordResetToken = Prisma.PasswordResetTokenModel

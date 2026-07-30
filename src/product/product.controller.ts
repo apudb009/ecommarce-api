@@ -53,7 +53,14 @@ export class ProductController {
     return this.productService.getBestSellers();
   }
 
-  // product.controller.ts — add variant routes BEFORE :slug
+  @Public()
+  @Get('filters')
+  getFilters(
+    @Query('categoryId', new ParseIntPipe({ optional: true }))
+    categoryId?: number,
+  ) {
+    return this.productService.getFilters(categoryId);
+  }
 
   @UseGuards(RolesGuard)
   @Roles('ADMIN')

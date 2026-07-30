@@ -417,4 +417,8 @@ export class ProductService {
 
     return [slug(productName), ...variantValues.map(slug)].join('-');
   }
+
+  async getFilters(categoryId?: number) {
+    return this.helper.getAvailableFilters(categoryId);
+  }
 }

@@ -18,21 +18,85 @@ export class ProductHelper {
       sortBy = 'createdAt',
       sortOrder = 'desc',
       categoryId,
+      categorySlug,
+      variantName,
+      variantValues,
+      colors,
+      minRating,
     } = filterDto;
 
     const skip = (page - 1) * limit;
 
+    // ── resolve category by slug if provided ────────
+    let resolvedCategoryId = categoryId;
+
+    if (categorySlug && !categoryId) {
+      const category = await this.prisma.category.findFirst({
+        where: { slug: categorySlug },
+        select: { id: true },
+      });
+      resolvedCategoryId = category?.id;
+    }
+
     const where: ProductWhereInput = {
+      isActive: true,
+      // ── full text search ──────────────────────────
       ...(search && {
         OR: [
           { name: { contains: search, mode: 'insensitive' } },
           { description: { contains: search, mode: 'insensitive' } },
+          { slug: { contains: search, mode: 'insensitive' } },
+          // search in category name
+          {
+            category: {
+              name: { contains: search, mode: 'insensitive' },
+            },
+          },
+          // search in variant values
+          {
+            variants: {
+              some: {
+                value: { contains: search, mode: 'insensitive' },
+              },
+            },
+          },
         ],
       }),
-      ...(minPrice && { price: { gte: minPrice } }),
-      ...(maxPrice && { price: { lte: maxPrice } }),
+      // ── price range ───────────────────────────────
+      ...(minPrice !== undefined &&
+        maxPrice !== undefined && {
+          price: { gte: minPrice, lte: maxPrice },
+        }),
+      ...(minPrice !== undefined &&
+        maxPrice === undefined && {
+          price: { gte: minPrice },
+        }),
+      ...(maxPrice !== undefined &&
+        minPrice === undefined && {
+          price: { lte: maxPrice },
+        }),
+      ...(resolvedCategoryId && { resolvedCategoryId }),
+
+      // ── in stock ──────────────────────────────────
       ...(inStock && { stock: { gt: 0 } }),
-      ...(categoryId && { categoryId }),
+
+      // ── variant filters ───────────────────────────
+      ...((variantValues?.length || colors?.length || variantName) && {
+        variants: {
+          some: {
+            isActive: true,
+            ...(variantName && {
+              name: { equals: variantName, mode: 'insensitive' },
+            }),
+            ...(variantValues?.length && {
+              value: { in: variantValues, mode: 'insensitive' },
+            }),
+            ...(colors?.length && {
+              color: { in: colors },
+            }),
+          },
+        },
+      }),
     };
 
     const [products, total] = await Promise.all([
@@ -46,7 +110,10 @@ export class ProductHelper {
         include: {
           category: { select: { id: true, name: true, slug: true } },
           images: { select: { url: true, id: true, isMain: true } },
-          variants: true,
+          variants: {
+            where: { isActive: true },
+            orderBy: { id: 'asc' },
+          },
           _count: {
             select: {
               reviews: true,
@@ -60,7 +127,7 @@ export class ProductHelper {
     ]);
 
     // calculate average rating for each product
-    const productsWithAvgRating = await this.withAvgRating(products);
+    const productsWithAvgRating = await this.withAvgRating(products, minRating);
 
     /*await Promise.all(
       products.map(async (product) => {
@@ -78,11 +145,15 @@ export class ProductHelper {
     return {
       data: productsWithAvgRating,
       meta: {
-        total,
+        total: minRating ? productsWithAvgRating.length : total,
         page,
         limit,
-        lastPage: Math.ceil(total / limit),
-        hasNextPage: page < Math.ceil(total / limit),
+        lastPage: Math.ceil(
+          (minRating ? productsWithAvgRating.length : total) / limit,
+        ),
+        hasNextPage:
+          page <
+          Math.ceil((minRating ? productsWithAvgRating.length : total) / limit),
         hasPrevPage: page > 1,
       },
     };
@@ -95,8 +166,9 @@ export class ProductHelper {
         _count: { select: { reviews: true } };
       };
     }>[],
+    minRating?: number,
   ) {
-    return Promise.all(
+    const productsWithAvgRating = await Promise.all(
       products.map(async (product) => {
         const avg = await this.prisma.review.aggregate({
           _avg: { rating: true },
@@ -110,5 +182,85 @@ export class ProductHelper {
         };
       }),
     );
+
+    // ── apply rating filter (post-query) ─────────────
+    const filtered = minRating
+      ? productsWithAvgRating.filter(
+          (p) => p.avgRating !== null && p.avgRating >= minRating,
+        )
+      : productsWithAvgRating;
+
+    return filtered;
+  }
+
+  // ── GET AVAILABLE FILTERS FOR CURRENT RESULTS ─────
+  async getAvailableFilters(categoryId?: number) {
+    const where: Prisma.ProductWhereInput = {
+      isActive: true,
+      ...(categoryId && { categoryId }),
+    };
+
+    const [priceRange, variantGroups, categories] = await Promise.all([
+      // price range
+      this.prisma.product.aggregate({
+        where,
+        _min: { price: true },
+        _max: { price: true },
+      }),
+
+      // available variant names + values
+      this.prisma.productVariant.findMany({
+        where: {
+          isActive: true,
+          product: { isActive: true, ...where },
+        },
+        select: {
+          name: true,
+          value: true,
+          color: true,
+        },
+        distinct: ['name', 'value'],
+        orderBy: [{ name: 'asc' }, { value: 'asc' }],
+      }),
+
+      // all categories with product count
+      this.prisma.category.findMany({
+        include: {
+          _count: {
+            select: { products: { where: { isActive: true } } },
+          },
+        },
+        orderBy: { name: 'asc' },
+      }),
+    ]);
+
+    // group variants by name
+    const variantMap: Record<string, { values: string[]; colors: string[] }> =
+      {};
+    variantGroups.forEach((v) => {
+      if (!variantMap[v.name]) {
+        variantMap[v.name] = { values: [], colors: [] };
+      }
+      if (!variantMap[v.name].values.includes(v.value)) {
+        variantMap[v.name].values.push(v.value);
+      }
+      if (v.color && !variantMap[v.name].colors.includes(v.color)) {
+        variantMap[v.name].colors.push(v.color);
+      }
+    });
+
+    return {
+      priceRange: {
+        min: Number(priceRange._min.price || 0),
+        max: Number(priceRange._max.price || 1000),
+      },
+      variants: variantMap,
+      categories: categories.map((c) => ({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        count: c._count.products,
+      })),
+    };
   }
 }
