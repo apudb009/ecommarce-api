@@ -7,6 +7,26 @@ import { FilterProductDto } from 'src/product/dto/filter-product.dto';
 @Injectable()
 export class ProductHelper {
   constructor(private prisma: PrismaService) {}
+
+  async getAllProductsAdminWithMeta(filterDto: FilterProductDto) {
+    const {
+      page = 1,
+      limit = 12,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      status,
+    } = filterDto;
+
+    return this.getAllProductsWithMeta({
+      page,
+      limit,
+      search,
+      sortBy,
+      sortOrder,
+      status,
+    });
+  }
   async getAllProductsWithMeta(filterDto: FilterProductDto) {
     const {
       page = 1,
@@ -23,6 +43,7 @@ export class ProductHelper {
       variantValues,
       colors,
       minRating,
+      status,
     } = filterDto;
 
     const skip = (page - 1) * limit;
@@ -39,7 +60,7 @@ export class ProductHelper {
     }
 
     const where: ProductWhereInput = {
-      isActive: true,
+      ...(status !== undefined && { isActive: status ?? true }), // isActive,
       // ── full text search ──────────────────────────
       ...(search && {
         OR: [

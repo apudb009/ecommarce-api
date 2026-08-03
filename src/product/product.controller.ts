@@ -34,6 +34,13 @@ export class ProductController {
 
   // GET /api/products (public + search + filter)
   @Public()
+  @Get('admin/all')
+  findAllAdmin(@Query() fiterDto: FilterProductDto) {
+    return this.productService.findAllForAdmin(fiterDto);
+  }
+
+  // GET /api/products (public + search + filter)
+  @Public()
   @Get()
   findAll(@Query() fiterDto: FilterProductDto) {
     return this.productService.findAll(fiterDto);

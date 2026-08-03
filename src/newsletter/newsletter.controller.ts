@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { NewsletterService } from './newsletter.service';
 import { CreateNewsletterDto } from './dto/create-newsletter.dto';
@@ -14,6 +15,7 @@ import { UpdateNewsletterDto } from './dto/update-newsletter.dto';
 import { Public, Roles } from 'src/auth/constants';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { FilterNewsletterDto } from './dto/filter-newsletter.dto';
 
 @ApiBearerAuth('access-token')
 @Controller('api/newsletters')
@@ -29,8 +31,8 @@ export class NewsletterController {
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
   @Get()
-  findAll() {
-    return this.newsletterService.findAll();
+  findAll(@Query() dto: FilterNewsletterDto) {
+    return this.newsletterService.findAll(dto);
   }
 
   @UseGuards(RolesGuard)

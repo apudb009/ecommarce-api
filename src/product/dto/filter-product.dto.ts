@@ -8,6 +8,7 @@ import {
   IsArray,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
+import { ToBoolean } from 'src/common/decorators/to-boolean.decorator';
 
 export class FilterProductDto {
   // pagination
@@ -92,4 +93,10 @@ export class FilterProductDto {
   @IsString()
   @IsOptional()
   categorySlug?: string;
+
+  // ── active status ────────────────────────────────
+  @IsOptional()
+  @ToBoolean()
+  @IsBoolean()
+  status?: boolean;
 }

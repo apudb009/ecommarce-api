@@ -21,6 +21,7 @@ import { CouponService } from 'src/coupon/coupon.service';
 import { NotificationService } from 'src/notification/notification.service';
 import { OrderTrackingService } from 'src/order-tracking/order-tracking.service';
 import { FlashSaleService } from 'src/flash-sale/flash-sale.service';
+import { QueryMode } from 'src/generated/prisma/internal/prismaNamespace';
 
 @Injectable()
 export class OrderService {
@@ -305,10 +306,31 @@ export class OrderService {
 
   // ── ADMIN — GET ALL ORDERS ─────────────────────────
   async findAll(filterDto: FilterOrderDto) {
-    const { status, page = 1, limit = 10 } = filterDto;
+    const {
+      status,
+      search,
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = filterDto;
     const skip = (page - 1) * limit;
     const where = {
       ...(status && { status }),
+      ...(search && {
+        OR: [
+          { id: isNaN(Number(search)) ? undefined : Number(search) },
+          {
+            user: { email: { contains: search, mode: QueryMode.insensitive } },
+          },
+          { user: { name: { contains: search, mode: QueryMode.insensitive } } },
+          {
+            user: {
+              username: { contains: search, mode: QueryMode.insensitive },
+            },
+          },
+        ].filter(Boolean),
+      }),
     };
     const [orders, total] = await Promise.all([
       this.prisma.order.findMany({
@@ -317,7 +339,7 @@ export class OrderService {
         take: limit,
         include: this.getIncludes(),
         orderBy: {
-          createdAt: 'desc',
+          [sortBy]: sortOrder,
         },
       }),
       this.prisma.order.count({ where }),

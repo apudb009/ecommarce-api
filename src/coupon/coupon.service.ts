@@ -8,6 +8,7 @@ import { CreateCouponDto } from './dto/create-coupon.dto';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
 import { PrismaService } from 'src/prisma.service';
 import { CouponType, Prisma } from 'src/generated/prisma/client';
+import { FilterCouponDto } from './dto/filter-coupon.dto';
 
 @Injectable()
 export class CouponService {
@@ -35,20 +36,48 @@ export class CouponService {
   }
 
   // ── GET ALL (admin) ────────────────────────────────
-  async findAll() {
-    return await this.prisma.coupon.findMany({
-      where: {
-        isActive: true,
-      },
-      include: {
-        _count: {
-          select: { uses: true },
+  async findAll(dto: FilterCouponDto) {
+    const {
+      status,
+      search,
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = dto;
+
+    const skip = (page - 1) * limit;
+
+    const where = {
+      ...(status !== undefined && { isActive: status }),
+      ...(search && {
+        code: { contains: search, mode: Prisma.QueryMode.insensitive },
+      }),
+    };
+
+    const [coupons, total] = await Promise.all([
+      this.prisma.coupon.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+          [sortBy]: sortOrder,
         },
+      }),
+      this.prisma.coupon.count({ where }),
+    ]);
+
+    return {
+      data: coupons,
+      meta: {
+        total,
+        page,
+        limit,
+        lastPage: Math.ceil(total / limit),
+        hasNextPage: total > page * limit,
+        hasPrevPage: page > 1,
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    };
   }
 
   // ── GET ONE ────────────────────────────────────────

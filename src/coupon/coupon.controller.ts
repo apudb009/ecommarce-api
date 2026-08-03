@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { CouponService } from './coupon.service';
 import { CreateCouponDto } from './dto/create-coupon.dto';
@@ -16,6 +17,7 @@ import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/constants';
 import { ApplyCouponDto } from './dto/apply-coupon.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { FilterCouponDto } from './dto/filter-coupon.dto';
 
 @ApiBearerAuth('access-token')
 @Controller('api/coupons')
@@ -34,8 +36,8 @@ export class CouponController {
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
   @Get()
-  findAll() {
-    return this.couponService.findAll();
+  findAll(@Query() filterDto: FilterCouponDto) {
+    return this.couponService.findAll(filterDto);
   }
 
   // GET /api/coupons/:id (admin)

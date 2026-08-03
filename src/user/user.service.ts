@@ -9,6 +9,10 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma.service';
 import { MailService } from 'src/mail/mail.service';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
+import { FilterUserDto } from './dto/filter-user.dto';
+import { QueryMode } from 'src/generated/prisma/internal/prismaNamespace';
+import { Role } from 'src/generated/prisma/enums';
+import { Prisma } from 'src/generated/prisma/client';
 
 @Injectable()
 export class UserService {
@@ -78,11 +82,60 @@ export class UserService {
     return user;
   }
 
-  async findAll(skip: number, take: number) {
-    return await this.prismaService.user.findMany({
-      skip,
-      take,
-    });
+  async findAll(dto: FilterUserDto) {
+    const {
+      search,
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      role,
+    } = dto;
+    const skip = (page - 1) * limit;
+    const whereClause: Prisma.UserWhereInput[] = [];
+
+    if (search) {
+      whereClause.push(
+        ...[
+          {
+            email: { contains: search, mode: QueryMode.insensitive },
+          },
+          { name: { contains: search, mode: QueryMode.insensitive } },
+        ],
+      );
+    }
+
+    const where = {
+      ...(search && {
+        OR: [...whereClause].filter(Boolean),
+      }),
+      ...(role && {
+        role: { equals: role as Role },
+      }),
+    };
+    const [users, total] = await Promise.all([
+      this.prismaService.user.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+      }),
+      this.prismaService.user.count({ where }),
+    ]);
+
+    return {
+      data: users,
+      meta: {
+        total,
+        page,
+        limit,
+        lastPage: Math.ceil(total / limit),
+        hasNextPage: total > page * limit,
+        hasPrevPage: page > 1,
+      },
+    };
   }
 
   async findOne(id: number) {

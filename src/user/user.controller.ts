@@ -9,6 +9,7 @@ import {
   Query,
   ParseIntPipe,
   Request,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -16,9 +17,11 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateAddressDto } from 'src/address/dto/create-address.dto';
 import { AddressService } from 'src/address/address.service';
 import { UpdateAddressDto } from 'src/address/dto/update-address.dto';
-import { Public } from 'src/auth/constants';
+import { Public, Roles } from 'src/auth/constants';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { RolesGuard } from 'src/auth/roles.guard';
+import { FilterUserDto } from './dto/filter-user.dto';
 
 @ApiBearerAuth('access-token')
 @Controller('api/user')
@@ -34,11 +37,10 @@ export class UserController {
   }
 
   @Get()
-  findAll(
-    @Query('skip', new ParseIntPipe({ optional: true })) skip: number,
-    @Query('take', new ParseIntPipe({ optional: true })) take: number,
-  ) {
-    return this.userService.findAll(skip, take);
+  @UseGuards(RolesGuard)
+  @Roles('ADMIN')
+  findAll(@Query() dto: FilterUserDto) {
+    return this.userService.findAll(dto);
   }
 
   @Get('me')

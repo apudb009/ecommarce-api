@@ -7,8 +7,10 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { CreateReturnRequestDto } from './dto/create.return.request.dto';
-import { OrderStatus, ReturnStatus } from 'src/generated/prisma/enums';
+import { OrderStatus } from 'src/generated/prisma/enums';
 import { UpdateReturnRequestDto } from './dto/update.return.request.dto';
+import { FilterReturnRequestDto } from './dto/filter-return-request.dto';
+import { QueryMode } from 'src/generated/prisma/internal/prismaNamespace';
 
 @Injectable()
 export class RetrunRequestService {
@@ -111,25 +113,72 @@ export class RetrunRequestService {
   }
 
   // ── GET ALL (admin) ────────────────────────────────
-  async findAll(status?: ReturnStatus) {
-    return this.prisma.returnRequest.findMany({
-      where: { status: status || undefined },
-      include: {
+  async findAll(dto: FilterReturnRequestDto) {
+    const {
+      status,
+      search,
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = dto;
+
+    const skip = (page - 1) * limit;
+    const where = {
+      ...(status !== undefined && { status }),
+      ...(search && {
         order: {
-          select: {
-            id: true,
-            totalAmount: true,
+          items: {
+            some: {
+              productName: { contains: search, mode: QueryMode.insensitive },
+            },
           },
         },
         user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+          email: { contains: search, mode: QueryMode.insensitive },
+          name: { contains: search, mode: QueryMode.insensitive },
+          username: { contains: search, mode: QueryMode.insensitive },
+        },
+        reason: { contains: search, mode: QueryMode.insensitive },
+      }),
+    };
+
+    const [total, returnRequests] = await Promise.all([
+      this.prisma.returnRequest.count({ where }),
+      this.prisma.returnRequest.findMany({
+        where,
+        include: {
+          order: {
+            select: {
+              id: true,
+              totalAmount: true,
+            },
+          },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
           },
         },
+        orderBy: { [sortBy]: sortOrder },
+        skip,
+        take: limit,
+      }),
+    ]);
+
+    return {
+      data: returnRequests,
+      meta: {
+        total,
+        page,
+        limit,
+        lastPage: Math.ceil(total / limit),
+        hasNextPage: total > page * limit,
+        hasPrevPage: page > 1,
       },
-    });
+    };
   }
 
   // ── UPDATE STATUS (admin) ──────────────────────────

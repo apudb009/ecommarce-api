@@ -1,8 +1,7 @@
-import { IsOptional, IsEnum, IsInt, Min, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
-import { OrderStatus } from 'src/generated/prisma/enums';
+import { IsOptional, IsString, IsBoolean, IsInt, Min } from 'class-validator';
 
-export class FilterOrderDto {
+export class FilterNewsletterDto {
   @IsOptional()
   @IsInt()
   @Min(1)
@@ -16,10 +15,6 @@ export class FilterOrderDto {
   limit?: number = 10;
 
   @IsOptional()
-  @IsEnum(OrderStatus)
-  status?: OrderStatus;
-
-  @IsOptional()
   @IsString()
   search?: string;
 
@@ -30,4 +25,8 @@ export class FilterOrderDto {
   @IsOptional()
   @IsString()
   sortOrder?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }

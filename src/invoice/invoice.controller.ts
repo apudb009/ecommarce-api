@@ -6,6 +6,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Request,
   Res,
   UseGuards,
@@ -16,6 +17,7 @@ import { RolesGuard } from 'src/auth/roles.guard';
 import { Roles } from 'src/auth/constants';
 import { InvoiceStatus } from 'src/generated/prisma/enums';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { FilterInvoiceDto } from './dto/filter-invoice.dto';
 
 @ApiBearerAuth('access-token')
 @Controller('api/invoices')
@@ -41,8 +43,8 @@ export class InvoiceController {
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
   @Get('admin/all')
-  async getAll() {
-    return await this.invoice.getAll();
+  async getAll(@Query() dto: FilterInvoiceDto) {
+    return await this.invoice.getAll(dto);
   }
 
   // GET /api/invoices/:id

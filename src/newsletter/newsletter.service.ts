@@ -2,6 +2,8 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateNewsletterDto } from './dto/create-newsletter.dto';
 import { UpdateNewsletterDto } from './dto/update-newsletter.dto';
 import { PrismaService } from 'src/prisma.service';
+import { FilterNewsletterDto } from './dto/filter-newsletter.dto';
+import { QueryMode } from 'src/generated/prisma/internal/prismaNamespace';
 
 @Injectable()
 export class NewsletterService {
@@ -24,8 +26,47 @@ export class NewsletterService {
     });
   }
 
-  async findAll() {
-    return await this.prisma.newsletter.findMany();
+  async findAll(dto: FilterNewsletterDto) {
+    const {
+      search,
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      isActive,
+    } = dto;
+
+    const skip = (page - 1) * limit;
+
+    const where = {
+      ...(search && {
+        email: { contains: search, mode: QueryMode.insensitive },
+      }),
+      ...(isActive !== undefined && { isActive }),
+    };
+
+    const [newsletters, total] = await Promise.all([
+      this.prisma.newsletter.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+      }),
+      this.prisma.newsletter.count({ where }),
+    ]);
+    return {
+      data: newsletters,
+      meta: {
+        total,
+        page,
+        limit,
+        lastPage: Math.ceil(total / limit),
+        hasNextPage: total > page * limit,
+        hasPrevPage: page > 1,
+      },
+    };
   }
 
   async findOne(id: number) {

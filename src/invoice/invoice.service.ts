@@ -9,6 +9,8 @@ import { PrismaService } from 'src/prisma.service';
 import { InvoiceType } from './entity/invoice.type';
 import { TaxService } from 'src/tax/tax.service';
 import { Tax } from 'src/generated/prisma/client';
+import { QueryMode } from 'src/generated/prisma/internal/prismaNamespace';
+import { FilterInvoiceDto } from './dto/filter-invoice.dto';
 
 @Injectable()
 export class InvoiceService {
@@ -190,28 +192,76 @@ export class InvoiceService {
   }
 
   // ── GET ALL (admin) ────────────────────────────────
-  async getAll() {
-    return this.prisma.invoice.findMany({
-      include: {
-        order: {
-          select: {
-            id: true,
-            grandTotalAmount: true,
-            status: true,
-            createdAt: true,
+  async getAll(filterDto: FilterInvoiceDto) {
+    const {
+      status,
+      search,
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = filterDto;
+
+    const skip = (page - 1) * limit;
+    const where = {
+      ...(status && { status }),
+      ...(search && {
+        OR: [
+          { id: isNaN(Number(search)) ? undefined : Number(search) },
+          {
+            user: { email: { contains: search, mode: QueryMode.insensitive } },
+          },
+          { user: { name: { contains: search, mode: QueryMode.insensitive } } },
+          {
+            user: {
+              username: { contains: search, mode: QueryMode.insensitive },
+            },
+          },
+        ].filter(Boolean),
+      }),
+    };
+
+    const [orders, total] = await Promise.all([
+      this.prisma.invoice.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          order: {
+            select: {
+              id: true,
+              grandTotalAmount: true,
+              status: true,
+              createdAt: true,
+            },
+          },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              username: true,
+            },
           },
         },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            username: true,
-          },
+        orderBy: {
+          [sortBy]: sortOrder,
         },
+      }),
+      this.prisma.invoice.count({ where }),
+    ]);
+
+    return {
+      data: orders,
+      meta: {
+        total,
+        page,
+        limit,
+        lastPage: Math.ceil(total / limit),
+        hasNextPage: total > page * limit,
+        hasPrevPage: page > 1,
       },
-      orderBy: { createdAt: 'desc' },
-    });
+    };
   }
 
   // ── UPDATE STATUS ──────────────────────────────────

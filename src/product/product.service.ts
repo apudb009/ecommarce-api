@@ -73,6 +73,14 @@ export class ProductService {
     return productsWithMeta;
   }
 
+  // ── GET ALL FOR ADMIN (with search, filter, pagination) ──────
+  async findAllForAdmin(fiterDto: FilterProductDto) {
+    const productsWithMeta =
+      await this.helper.getAllProductsAdminWithMeta(fiterDto);
+
+    return productsWithMeta;
+  }
+
   // ── GET ONE BY SLUG ────────────────────────────────
   async findOneBySlug(slug: string) {
     const product = await this.prisma.product.findFirst({
