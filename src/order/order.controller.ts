@@ -13,9 +13,8 @@ import {
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { FilterOrderDto } from './dto/filter-order.dto';
-import { RolesGuard } from 'src/auth/roles.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/constants';
-import { Role } from 'src/generated/prisma/enums';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
@@ -47,9 +46,9 @@ export class OrderController {
   @Get(':id')
   findOne(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req: { user: { sub: number; role: Role } },
+    @Request() req: { user: { sub: number; role: string } },
   ) {
-    const isAdmin = req.user.role === Role.ADMIN;
+    const isAdmin = req.user.role === 'ADMIN';
     return this.orderService.findOne(+id, req.user.sub, isAdmin);
   }
 

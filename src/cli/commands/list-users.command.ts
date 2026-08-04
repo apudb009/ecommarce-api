@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { PrismaClient, Role } from 'src/generated/prisma/client';
+import { PrismaClient } from 'src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 const prisma = new PrismaClient({
@@ -21,7 +21,7 @@ export function registerListUsersCommand(program: Command) {
       try {
         const users = await prisma.user.findMany({
           where: options.role
-            ? { role: options.role.toUpperCase() as Role }
+            ? { role: options.role.toUpperCase() }
             : undefined,
           take: Number(options.limit),
           orderBy: { createdAt: 'desc' },

@@ -13,7 +13,7 @@ import { NewsletterService } from './newsletter.service';
 import { CreateNewsletterDto } from './dto/create-newsletter.dto';
 import { UpdateNewsletterDto } from './dto/update-newsletter.dto';
 import { Public, Roles } from 'src/auth/constants';
-import { RolesGuard } from 'src/auth/roles.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { FilterNewsletterDto } from './dto/filter-newsletter.dto';
 

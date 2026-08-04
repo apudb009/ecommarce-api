@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import { StoreSettingsService } from './store-settings.service';
 import { Public, Roles } from 'src/auth/constants';
-import { RolesGuard } from 'src/auth/roles.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 @Controller('api/settings')
 export class StoreSettingsController {

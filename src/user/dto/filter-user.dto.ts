@@ -1,6 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
-import { Role } from 'src/generated/prisma/enums';
+import { IsInt, IsOptional, IsString } from 'class-validator';
 
 export class FilterUserDto {
   @IsOptional()
@@ -8,7 +7,7 @@ export class FilterUserDto {
   search?: string;
 
   @IsOptional()
-  @IsEnum(Role)
+  @IsString()
   role?: string;
 
   @IsOptional()

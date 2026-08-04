@@ -1,6 +1,6 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { Roles } from 'src/auth/constants';
-import { RolesGuard } from 'src/auth/roles.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { AnalyticsService } from './analytics.service';
 
 @UseGuards(RolesGuard)

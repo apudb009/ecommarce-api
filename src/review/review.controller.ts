@@ -15,7 +15,6 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { Public } from 'src/auth/constants';
 import { FilterReviewDto } from './dto/filter-review.dto';
-import { Role } from 'src/generated/prisma/enums';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiBearerAuth('access-token')
@@ -74,9 +73,9 @@ export class ReviewController {
   @Delete('reviews/:id')
   remove(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req: { user: { sub: number; role: Role } },
+    @Request() req: { user: { sub: number; role: string } },
   ) {
-    const isAdmin = req.user.role === Role.ADMIN;
+    const isAdmin = req.user.role === 'ADMIN';
     return this.reviewService.remove(id, req.user.sub, isAdmin);
   }
 }

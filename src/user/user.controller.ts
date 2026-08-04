@@ -20,7 +20,7 @@ import { UpdateAddressDto } from 'src/address/dto/update-address.dto';
 import { Public, Roles } from 'src/auth/constants';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { RolesGuard } from 'src/auth/roles.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { FilterUserDto } from './dto/filter-user.dto';
 
 @ApiBearerAuth('access-token')
@@ -86,8 +86,11 @@ export class UserController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: { user: { sub: number } },
+  ) {
+    return this.userService.remove(id, req.user.sub);
   }
 
   // ── ADDRESSES ──────────────────────────────────────

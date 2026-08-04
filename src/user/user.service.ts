@@ -11,7 +11,6 @@ import { MailService } from 'src/mail/mail.service';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { FilterUserDto } from './dto/filter-user.dto';
 import { QueryMode } from 'src/generated/prisma/internal/prismaNamespace';
-import { Role } from 'src/generated/prisma/enums';
 import { Prisma } from 'src/generated/prisma/client';
 
 @Injectable()
@@ -110,7 +109,7 @@ export class UserService {
         OR: [...whereClause].filter(Boolean),
       }),
       ...(role && {
-        role: { equals: role as Role },
+        role: { equals: role },
       }),
     };
     const [users, total] = await Promise.all([
@@ -120,6 +119,30 @@ export class UserService {
         take: limit,
         orderBy: {
           [sortBy]: sortOrder,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          username: true,
+          role: true,
+          createdAt: true,
+          userRole: {
+            select: {
+              id: true,
+              name: true,
+              permissions: {
+                select: {
+                  permission: {
+                    select: {
+                      module: true,
+                      action: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       }),
       this.prismaService.user.count({ where }),
@@ -136,6 +159,37 @@ export class UserService {
         hasPrevPage: page > 1,
       },
     };
+  }
+
+  // ── GET ONE USER (admin) ───────────────────────────
+  async findOneAdmin(id: number) {
+    const user = await this.prismaService.user.findUnique({
+      where: { id },
+      omit: {
+        password: true,
+      },
+      include: {
+        userRole: {
+          include: {
+            permissions: {
+              include: {
+                permission: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            orders: true,
+            reviews: true,
+          },
+        },
+      },
+    });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    return user;
   }
 
   async findOne(id: number) {
@@ -205,7 +259,7 @@ export class UserService {
     return { message: 'Password updated successfully' };
   }
 
-  async remove(id: number) {
+  async remove(id: number, userId: number) {
     const user = await this.prismaService.user.findFirst({
       where: {
         id,
@@ -214,6 +268,10 @@ export class UserService {
 
     if (!user) {
       throw new NotFoundException('User not found');
+    }
+
+    if (user.id === userId && user.role === 'ADMIN') {
+      throw new ConflictException('You cannot delete your own account');
     }
 
     return await this.prismaService.user.delete({

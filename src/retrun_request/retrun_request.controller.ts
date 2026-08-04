@@ -13,9 +13,8 @@ import {
 import { RetrunRequestService } from './retrun_request.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { CreateReturnRequestDto } from './dto/create.return.request.dto';
-import { RolesGuard } from 'src/auth/roles.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/constants';
-import { Role } from 'src/generated/prisma/enums';
 import { UpdateReturnRequestDto } from './dto/update.return.request.dto';
 import { FilterReturnRequestDto } from './dto/filter-return-request.dto';
 
@@ -51,7 +50,7 @@ export class RetrunRequestController {
   // GET /api/returns/:id
   @Get(':id')
   findOne(
-    @Request() req: { user: { sub: number; role: Role } },
+    @Request() req: { user: { sub: number; role: string } },
     @Param('id', ParseIntPipe) id: number,
   ) {
     const isAdmin = req.user.role === 'ADMIN';

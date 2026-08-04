@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import * as express from 'express';
 import { InvoiceService } from './invoice.service';
-import { RolesGuard } from 'src/auth/roles.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/constants';
 import { InvoiceStatus } from 'src/generated/prisma/enums';
 import { ApiBearerAuth } from '@nestjs/swagger';

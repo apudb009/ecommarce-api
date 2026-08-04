@@ -13,7 +13,7 @@ import {
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { RolesGuard } from 'src/auth/roles.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Public, Roles } from 'src/auth/constants';
 import { FilterProductDto } from './dto/filter-product.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';

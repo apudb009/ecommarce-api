@@ -32,6 +32,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
 import { StoreSettingsModule } from './store-settings/store-settings.module';
 import { FlashSaleModule } from './flash-sale/flash-sale.module';
 import { OrderTrackingModule } from './order-tracking/order-tracking.module';
+import { RoleModule } from './role/role.module';
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { OrderTrackingModule } from './order-tracking/order-tracking.module';
     StoreSettingsModule,
     FlashSaleModule,
     OrderTrackingModule,
+    RoleModule,
   ],
   controllers: [AppController],
   providers: [

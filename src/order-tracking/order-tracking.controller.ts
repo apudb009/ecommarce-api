@@ -11,8 +11,7 @@ import {
 } from '@nestjs/common';
 import { OrderTrackingService } from './order-tracking.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { Role } from 'src/generated/prisma/enums';
-import { RolesGuard } from 'src/auth/roles.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/constants';
 
 @ApiBearerAuth('access-token')
@@ -24,9 +23,9 @@ export class OrderTrackingController {
   @Get(':id/tracking')
   getTracking(
     @Param('id', ParseIntPipe) orderId: number,
-    @Request() req: { user: { sub: number; role: Role } },
+    @Request() req: { user: { sub: number; role: string } },
   ) {
-    const isAdmin = req.user.role === Role.ADMIN;
+    const isAdmin = req.user.role === 'ADMIN';
     return this.orderTracking.getTracking(orderId, req.user.sub, isAdmin);
   }
 

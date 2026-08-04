@@ -20,7 +20,8 @@ model User {
   username     String   @unique
   name         String?
   password     String
-  role         Role     @default(CUSTOMER)
+  role         String     @default("CUSTOMER")
+  roleId       Int?
   refreshToken String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -35,11 +36,7 @@ model User {
   notifications Notification[]
   returnRequests ReturnRequest[]
   passwordResetTokens PasswordResetToken[]
-}
-
-enum Role {
-  CUSTOMER
-  ADMIN
+  userRole Role? @relation(fields: [roleId], references: [id])   
 }
 
 // ── ADDRESS ────────────────────────────────────────
@@ -548,4 +545,38 @@ model PasswordResetToken {
   userId    Int
 
   @@index([userId])
+}
+
+// ── ROLES & PERMISSIONS ────────────────────────────
+
+model Role {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
+  description String?
+  isSystem    Boolean          @default(false)  // ADMIN/CUSTOMER can't be deleted
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  permissions RolePermission[]
+  users       User[]
+}
+
+model Permission {
+  id          Int              @id @default(autoincrement())
+  module      String           // "products", "orders", "users"...
+  action      String           // "create", "read", "update", "delete"
+  description String?
+
+  roles       RolePermission[]
+
+  @@unique([module, action])
+}
+
+model RolePermission {
+  role     Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId   Int
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  permissionId Int
+
+  @@id([roleId, permissionId])
 }
