@@ -18,14 +18,69 @@ export class ProductHelper {
       status,
     } = filterDto;
 
-    return this.getAllProductsWithMeta({
-      page,
-      limit,
-      search,
-      sortBy,
-      sortOrder,
-      status,
-    });
+    const skip = (page - 1) * limit;
+
+    const where: ProductWhereInput = {
+      ...(status !== undefined && { isActive: status ?? true }), // isActive,
+      // ── full text search ──────────────────────────
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+          // search in category name
+          {
+            category: {
+              name: { contains: search, mode: 'insensitive' },
+            },
+          },
+          // search in variant values
+          {
+            variants: {
+              some: {
+                value: { contains: search, mode: 'insensitive' },
+              },
+            },
+          },
+        ],
+      }),
+    };
+
+    const [products, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        take: limit,
+        skip,
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+        select: {
+          id: true,
+          name: true,
+          //slug: true,
+          //description: true,
+          price: true,
+          stock: true,
+          isActive: true,
+          images: { select: { url: true, isMain: true } },
+          category: { select: { id: true, name: true } },
+        },
+      }),
+      this.prisma.product.count({
+        where,
+      }),
+    ]);
+
+    return {
+      data: products,
+      meta: {
+        total,
+        page,
+        limit,
+        lastPage: Math.ceil(total / limit),
+        hasNextPage: page < Math.ceil(total / limit),
+        hasPrevPage: page > 1,
+      },
+    };
   }
   async getAllProductsWithMeta(filterDto: FilterProductDto) {
     const {
@@ -128,12 +183,28 @@ export class ProductHelper {
         orderBy: {
           [sortBy]: sortOrder,
         },
-        include: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          price: true,
+          stock: true,
+          isActive: true,
+          images: { select: { url: true, isMain: true, id: true } },
           category: { select: { id: true, name: true, slug: true } },
-          images: { select: { url: true, id: true, isMain: true } },
           variants: {
             where: { isActive: true },
             orderBy: { id: 'asc' },
+            select: {
+              id: true,
+              name: true,
+              value: true,
+              color: true,
+              isActive: true,
+              price: true,
+              stock: true,
+            },
           },
           _count: {
             select: {
@@ -169,7 +240,15 @@ export class ProductHelper {
 
   async withAvgRating(
     products: Prisma.ProductGetPayload<{
-      include: {
+      select: {
+        id: true;
+        name: true;
+        slug: true;
+        description: true;
+        price: true;
+        stock: true;
+        isActive: true;
+        images: { select: { url: true; isMain: true; id: true } };
         category: { select: { id: true; name: true; slug: true } };
         _count: { select: { reviews: true } };
       };
