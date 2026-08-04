@@ -24,6 +24,10 @@ async function main() {
     }
   }
 
+  console.log('🌱 Seeding permissions completed');
+
+  console.log('🌱 Seeding admin role ...');
+
   // seed ADMIN role
   const adminRole = await prisma.role.upsert({
     where: { name: 'ADMIN' },
@@ -49,7 +53,7 @@ async function main() {
     });
   }
 
-  console.log('✅ Seeding complete');
+  console.log('✅ Seeding + admin role adding completed');
 }
 
 main()
