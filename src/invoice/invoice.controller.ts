@@ -13,11 +13,11 @@ import {
 } from '@nestjs/common';
 import * as express from 'express';
 import { InvoiceService } from './invoice.service';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Roles } from 'src/auth/constants';
+import { RequirePermission } from 'src/auth/constants';
 import { InvoiceStatus } from 'src/generated/prisma/enums';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { FilterInvoiceDto } from './dto/filter-invoice.dto';
+import { PermissionGuard } from 'src/auth/guards/permission.guard';
 
 @ApiBearerAuth('access-token')
 @Controller('api/invoices')
@@ -40,8 +40,8 @@ export class InvoiceController {
   }
 
   // GET /api/invoices/admin/all
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('invoices', 'read')
   @Get('admin/all')
   async getAll(@Query() dto: FilterInvoiceDto) {
     return await this.invoice.getAll(dto);
@@ -77,8 +77,8 @@ export class InvoiceController {
   }
 
   // PATCH /api/invoices/:id/status
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('invoices', 'update')
   @Patch(':id/status')
   updateStatus(
     @Param('id', ParseIntPipe) id: number,

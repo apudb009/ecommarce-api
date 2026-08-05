@@ -17,11 +17,11 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateAddressDto } from 'src/address/dto/create-address.dto';
 import { AddressService } from 'src/address/address.service';
 import { UpdateAddressDto } from 'src/address/dto/update-address.dto';
-import { Public, Roles } from 'src/auth/constants';
+import { Public, RequirePermission } from 'src/auth/constants';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { FilterUserDto } from './dto/filter-user.dto';
+import { PermissionGuard } from 'src/auth/guards/permission.guard';
 
 @ApiBearerAuth('access-token')
 @Controller('api/user')
@@ -36,9 +36,16 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  @Get()
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @Post('admin')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('users', 'create')
+  createFromAdmin(@Body() createUserDto: CreateUserDto) {
+    return this.userService.createFromAdmin(createUserDto);
+  }
+
+  @Get('admin/all')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('users', 'read')
   findAll(@Query() dto: FilterUserDto) {
     return this.userService.findAll(dto);
   }
@@ -83,6 +90,16 @@ export class UserController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);
+  }
+
+  @UseGuards(PermissionGuard)
+  @RequirePermission('users', 'update')
+  @Patch('admin/:id')
+  updateAdmin(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.userService.update(id, updateUserDto);
   }
 
   @Delete(':id')

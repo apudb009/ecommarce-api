@@ -11,8 +11,8 @@ import {
 } from '@nestjs/common';
 import { OrderTrackingService } from './order-tracking.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Roles } from 'src/auth/constants';
+import { RequirePermission } from 'src/auth/constants';
+import { PermissionGuard } from 'src/auth/guards/permission.guard';
 
 @ApiBearerAuth('access-token')
 @Controller('api/orders')
@@ -29,9 +29,18 @@ export class OrderTrackingController {
     return this.orderTracking.getTracking(orderId, req.user.sub, isAdmin);
   }
 
+  // GET /api/orders/admin/:id/tracking
+  @Get('admin/:id/tracking')
+  getTrackingAdmin(
+    @Param('id', ParseIntPipe) orderId: number,
+    @Request() req: { user: { sub: number; role: string } },
+  ) {
+    return this.orderTracking.getTracking(orderId, req.user.sub, true);
+  }
+
   // POST /api/orders/:id/tracking (admin — manual event)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('orders', 'update')
   @Post(':id/tracking')
   addTrackingEvent(
     @Param('id', ParseIntPipe) orderId: number,
@@ -46,8 +55,8 @@ export class OrderTrackingController {
   }
 
   // PATCH /api/orders/:id/tracking-number (admin)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('orders', 'update')
   @Patch(':id/tracking-number')
   updateTrackingNumber(
     @Param('id', ParseIntPipe) orderId: number,

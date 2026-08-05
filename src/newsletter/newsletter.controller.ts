@@ -12,10 +12,10 @@ import {
 import { NewsletterService } from './newsletter.service';
 import { CreateNewsletterDto } from './dto/create-newsletter.dto';
 import { UpdateNewsletterDto } from './dto/update-newsletter.dto';
-import { Public, Roles } from 'src/auth/constants';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Public, RequirePermission } from 'src/auth/constants';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { FilterNewsletterDto } from './dto/filter-newsletter.dto';
+import { PermissionGuard } from 'src/auth/guards/permission.guard';
 
 @ApiBearerAuth('access-token')
 @Controller('api/newsletters')
@@ -28,15 +28,15 @@ export class NewsletterController {
     return this.newsletterService.create(createNewsletterDto);
   }
 
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('newsletters', 'read')
   @Get()
   findAll(@Query() dto: FilterNewsletterDto) {
     return this.newsletterService.findAll(dto);
   }
 
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('newsletters', 'read')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.newsletterService.findOne(+id);
@@ -51,8 +51,8 @@ export class NewsletterController {
     return this.newsletterService.update(+id, updateNewsletterDto);
   }
 
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('newsletters', 'delete')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.newsletterService.remove(+id);

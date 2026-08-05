@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import { StoreSettingsService } from './store-settings.service';
-import { Public, Roles } from 'src/auth/constants';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Public, RequirePermission } from 'src/auth/constants';
+import { PermissionGuard } from 'src/auth/guards/permission.guard';
 
 @Controller('api/settings')
 export class StoreSettingsController {
@@ -15,8 +15,8 @@ export class StoreSettingsController {
   }
 
   // PATCH /api/settings (admin — update multiple at once)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('settings', 'update')
   @Patch()
   updateMany(@Body() settings: Record<string, string>) {
     return this.storeSetting.updateMany(settings);

@@ -12,9 +12,9 @@ import {
 import { FlashSaleService } from './flash-sale.service';
 import { CreateFlashSaleDto } from './dto/create-flash-sale.dto';
 import { UpdateFlashSaleDto } from './dto/update-flash-sale.dto';
-import { Public, Roles } from 'src/auth/constants';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Public, RequirePermission } from 'src/auth/constants';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { PermissionGuard } from 'src/auth/guards/permission.guard';
 
 @ApiBearerAuth('access-token')
 @Controller('api/flash-sales')
@@ -39,32 +39,32 @@ export class FlashSaleController {
   // ── ADMIN ──────────────────────────────────────────
 
   // POST /api/flash-sales
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('flash-sales', 'create')
   @Post()
   create(@Body() createFlashSaleDto: CreateFlashSaleDto) {
     return this.flashSaleService.create(createFlashSaleDto);
   }
 
   // GET /api/flash-sales (admin)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('flash-sales', 'read')
   @Get()
   findAll() {
     return this.flashSaleService.findAll();
   }
 
   // GET /api/flash-sales/:id
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('flash-sales', 'read')
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.flashSaleService.findOne(id);
   }
 
   // PATCH /api/flash-sales/:id
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('flash-sales', 'update')
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -74,16 +74,16 @@ export class FlashSaleController {
   }
 
   // DELETE /api/flash-sales/:id
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('flash-sales', 'delete')
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.flashSaleService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.flashSaleService.remove(id);
   }
 
   // POST /api/flash-sales/:id/products
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('flash-sales', 'update')
   @Post(':id/products')
   addProducts(
     @Param('id', ParseIntPipe) id: number,
@@ -93,8 +93,8 @@ export class FlashSaleController {
   }
 
   // DELETE /api/flash-sales/:id/products/:productId
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('flash-sales', 'delete')
   @Delete(':id/products/:productId')
   removeProduct(
     @Param('id', ParseIntPipe) id: number,

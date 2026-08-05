@@ -12,10 +12,10 @@ import {
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { Public, Roles } from 'src/auth/constants';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Public, RequirePermission } from 'src/auth/constants';
 import { FilterProductDto } from 'src/product/dto/filter-product.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { PermissionGuard } from 'src/auth/guards/permission.guard';
 
 @ApiBearerAuth('access-token')
 @Controller('api/categories')
@@ -23,8 +23,8 @@ export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   // POST /api/categories (admin only)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('categories', 'create')
   @Post()
   create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoryService.create(createCategoryDto);
@@ -48,8 +48,8 @@ export class CategoryController {
   }
 
   // PATCH /api/categories/:id (admin only)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('categories', 'update')
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -59,8 +59,8 @@ export class CategoryController {
   }
 
   // DELETE /api/categories/:id (admin only)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('categories', 'delete')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.categoryService.remove(+id);

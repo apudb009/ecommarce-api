@@ -13,10 +13,10 @@ import {
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { FilterOrderDto } from './dto/filter-order.dto';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Roles } from 'src/auth/constants';
+import { RequirePermission } from 'src/auth/constants';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { PermissionGuard } from 'src/auth/guards/permission.guard';
 
 @ApiBearerAuth('access-token')
 @Controller('api/orders')
@@ -42,7 +42,7 @@ export class OrderController {
     return this.orderService.getMyOrders(req.user.sub, filterDto);
   }
 
-  // GET /api/orders/:id (admin and customer only)
+  // GET /api/orders/:id (customer only)
   @Get(':id')
   findOne(
     @Param('id', ParseIntPipe) id: number,
@@ -53,11 +53,22 @@ export class OrderController {
   }
 
   // GET /api/orders/admin/all — must be before :id
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
-  @Get('/admin/all')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('orders', 'read')
+  @Get('admin/all')
   findAll(@Query() filterDto: FilterOrderDto) {
     return this.orderService.findAll(filterDto);
+  }
+
+  // GET /api/orders/admin/:id (admin only)
+  @Get('admin/:id')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('orders', 'read')
+  findOneAdmin(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: { user: { sub: number; role: string } },
+  ) {
+    return this.orderService.findOne(+id, req.user.sub, true);
   }
 
   // PATCH /api/orders/:id/cancel
@@ -70,8 +81,8 @@ export class OrderController {
   }
 
   // PATCH /api/orders/:id/status (admin only)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('orders', 'update')
   @Patch(':id/status')
   updateStatus(
     @Param('id', ParseIntPipe) id: number,

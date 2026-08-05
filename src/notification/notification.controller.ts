@@ -11,9 +11,9 @@ import {
 } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Roles } from 'src/auth/constants';
+import { RequirePermission } from 'src/auth/constants';
 import { NotificationType } from 'src/generated/prisma/enums';
+import { PermissionGuard } from 'src/auth/guards/permission.guard';
 
 @ApiBearerAuth('access-token')
 @Controller('api/notifications')
@@ -26,16 +26,16 @@ export class NotificationController {
   }
 
   // GET /api/notifications/admin/all  (notification history)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('notifications', 'read')
   @Get('admin/all')
   getAllNotifications() {
     return this.notificationService.findAll();
   }
 
   // POST /api/notifications/send  (send to specific user)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('notifications', 'create')
   @Post('send')
   send(
     @Body()
@@ -64,8 +64,8 @@ export class NotificationController {
   }
 
   // POST /api/notifications/broadcast
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('notifications', 'create')
   @Patch('broadcast')
   notifyAll(@Body() body: { title: string; message: string; link?: string }) {
     return this.notificationService.notifyPromoToAllUsers(

@@ -12,10 +12,10 @@ import {
 import { BannerService } from './banner.service';
 import { CreateBannerDto } from './dto/create-banner.dto';
 import { UpdateBannerDto } from './dto/update-banner.dto';
-import { Public, Roles } from 'src/auth/constants';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Public, RequirePermission } from 'src/auth/constants';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
+import { PermissionGuard } from 'src/auth/guards/permission.guard';
 
 @SkipThrottle()
 @ApiBearerAuth('access-token')
@@ -24,15 +24,15 @@ export class BannerController {
   constructor(private readonly bannerService: BannerService) {}
 
   @Post()
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('banners', 'create')
   create(@Body() createBannerDto: CreateBannerDto) {
     return this.bannerService.create(createBannerDto);
   }
 
   @Get('admin/all')
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('banners', 'read')
   findAll() {
     return this.bannerService.findAll();
   }
@@ -44,15 +44,15 @@ export class BannerController {
   }
 
   @Get(':id')
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('banners', 'read')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.bannerService.findOne(id);
   }
 
   @Patch(':id')
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('banners', 'update')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateBannerDto: UpdateBannerDto,
@@ -61,15 +61,15 @@ export class BannerController {
   }
 
   @Patch('reorder/:id')
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('banners', 'update')
   reorder(@Param('id', ParseIntPipe) id: number, @Body() position: number) {
     return this.bannerService.reorder(id, position);
   }
 
   @Delete(':id')
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('banners', 'delete')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.bannerService.remove(id);
   }

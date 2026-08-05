@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -18,4 +19,8 @@ export class CreateUserDto {
   role?: string;
   @IsNotEmpty()
   username!: string;
+
+  @IsOptional()
+  @IsInt()
+  roleId?: number;
 }

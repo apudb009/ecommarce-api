@@ -1,10 +1,10 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { Roles } from 'src/auth/constants';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { RequirePermission } from 'src/auth/constants';
 import { AnalyticsService } from './analytics.service';
+import { PermissionGuard } from 'src/auth/guards/permission.guard';
 
-@UseGuards(RolesGuard)
-@Roles('ADMIN')
+@UseGuards(PermissionGuard)
+@RequirePermission('analytics', 'read')
 @Controller('api/analytics')
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}

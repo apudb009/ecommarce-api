@@ -6,11 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PrismaService } from 'src/prisma.service';
-
-export const PERMISSION_KEY = 'permission';
-
-export const RequirePermission = (module: string, action: string) =>
-  Reflect.metadata(PERMISSION_KEY, `${module}:${action}`);
+import { PERMISSION_KEY } from '../constants';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {

@@ -13,11 +13,11 @@ import {
 import { CouponService } from './coupon.service';
 import { CreateCouponDto } from './dto/create-coupon.dto';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Roles } from 'src/auth/constants';
+import { RequirePermission } from 'src/auth/constants';
 import { ApplyCouponDto } from './dto/apply-coupon.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { FilterCouponDto } from './dto/filter-coupon.dto';
+import { PermissionGuard } from 'src/auth/guards/permission.guard';
 
 @ApiBearerAuth('access-token')
 @Controller('api/coupons')
@@ -25,40 +25,40 @@ export class CouponController {
   constructor(private readonly couponService: CouponService) {}
 
   // POST /api/coupons (admin)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('coupons', 'create')
   @Post()
   create(@Body() createCouponDto: CreateCouponDto) {
     return this.couponService.create(createCouponDto);
   }
 
   // GET /api/coupons (admin)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('coupons', 'read')
   @Get()
   findAll(@Query() filterDto: FilterCouponDto) {
     return this.couponService.findAll(filterDto);
   }
 
   // GET /api/coupons/:id (admin)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('coupons', 'read')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.couponService.findOne(+id);
   }
 
   // PATCH /api/coupons/:id (admin)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('coupons', 'update')
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCouponDto: UpdateCouponDto) {
     return this.couponService.update(+id, updateCouponDto);
   }
 
   // DELETE /api/coupons/:id (admin)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('coupons', 'delete')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.couponService.remove(+id);

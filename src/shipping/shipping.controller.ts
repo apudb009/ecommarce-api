@@ -12,23 +12,23 @@ import { ShippingService } from './shipping.service';
 import { CreateShippingDto } from './dto/create-shipping.dto';
 import { UpdateShippingDto } from './dto/update-shipping.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Public, Roles } from 'src/auth/constants';
+import { Public, RequirePermission } from 'src/auth/constants';
+import { PermissionGuard } from 'src/auth/guards/permission.guard';
 
 @ApiBearerAuth('access-token')
 @Controller('api/shipping')
 export class ShippingController {
   constructor(private readonly shippingService: ShippingService) {}
 
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('shipping', 'create')
   @Post()
   create(@Body() createShippingDto: CreateShippingDto) {
     return this.shippingService.create(createShippingDto);
   }
 
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('shipping', 'read')
   @Get()
   findAll() {
     return this.shippingService.findAll();
@@ -40,15 +40,15 @@ export class ShippingController {
     return this.shippingService.getActive();
   }
 
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('shipping', 'read')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.shippingService.findOne(+id);
   }
 
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('shipping', 'update')
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -57,8 +57,8 @@ export class ShippingController {
     return this.shippingService.update(+id, updateShippingDto);
   }
 
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('shipping', 'delete')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.shippingService.remove(+id);

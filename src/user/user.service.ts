@@ -20,7 +20,7 @@ export class UserService {
     private mail: MailService,
   ) {}
 
-  async register(createUserDto: CreateUserDto) {
+  async register(createUserDto: CreateUserDto, sendWelcomeEmail = true) {
     //check for existance of user with email
     const user = await this.getUserByEmail(createUserDto.email);
 
@@ -40,12 +40,14 @@ export class UserService {
     createUserDto.password = hashedPassword;
 
     const newUser = await this.create(createUserDto);
-    this.mail
-      .sendWelcome({
-        to: newUser.email,
-        name: newUser.name || newUser.username,
-      })
-      .catch(() => {});
+    if (sendWelcomeEmail) {
+      this.mail
+        .sendWelcome({
+          to: newUser.email,
+          name: newUser.name || newUser.username,
+        })
+        .catch(() => {});
+    }
 
     return newUser;
   }
@@ -72,6 +74,10 @@ export class UserService {
         username,
       },
     });
+  }
+
+  async createFromAdmin(createUserDto: CreateUserDto) {
+    await this.register(createUserDto, false);
   }
 
   async create(createUserDto: CreateUserDto) {
@@ -131,6 +137,7 @@ export class UserService {
             select: {
               id: true,
               name: true,
+              isSystem: true,
               permissions: {
                 select: {
                   permission: {
@@ -196,6 +203,30 @@ export class UserService {
     const user = await this.prismaService.user.findUnique({
       where: {
         id,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        username: true,
+        role: true,
+        refreshToken: true,
+        userRole: {
+          select: {
+            id: true,
+            name: true,
+            permissions: {
+              select: {
+                permission: {
+                  select: {
+                    module: true,
+                    action: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
 

@@ -229,7 +229,7 @@ export class OrderService {
       include: this.getIncludes(),
     });
     if (!order) {
-      throw new NotFoundException('Order not found tt');
+      throw new NotFoundException('Order not found');
     }
 
     if (!isAdmin && order.userId !== userId) {

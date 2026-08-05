@@ -13,11 +13,11 @@ import {
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Public, Roles } from 'src/auth/constants';
+import { Public, RequirePermission } from 'src/auth/constants';
 import { FilterProductDto } from './dto/filter-product.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { CreateVariantDto } from './dto/create-variant.dto';
+import { PermissionGuard } from 'src/auth/guards/permission.guard';
 
 @ApiBearerAuth('access-token')
 @Controller('api/products')
@@ -25,15 +25,16 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   // POST /api/products (admin only)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('products', 'create')
   @Post()
   create(@Body() createProductDto: CreateProductDto) {
     return this.productService.create(createProductDto);
   }
 
   // GET /api/products (public + search + filter)
-  @Public()
+  @UseGuards(PermissionGuard)
+  @RequirePermission('products', 'read')
   @Get('admin/all')
   findAllAdmin(@Query() fiterDto: FilterProductDto) {
     return this.productService.findAllForAdmin(fiterDto);
@@ -69,8 +70,8 @@ export class ProductController {
     return this.productService.getFilters(categoryId);
   }
 
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('products', 'update')
   @Post(':id/variants')
   addVariant(
     @Param('id', ParseIntPipe) id: number,
@@ -86,8 +87,8 @@ export class ProductController {
   }
 
   // POST /api/products/variants/getSku (admin only)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('products', 'update')
   @Post('variants/getSku')
   getUniqueSku(@Body() body: { productName: string; variantValues: string[] }) {
     return this.productService.generateUniqueSku(
@@ -104,8 +105,8 @@ export class ProductController {
     return this.productService.updateVariant(variantId, dto);
   }
 
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('products', 'delete')
   @Delete('variants/:variantId')
   deleteVariant(@Param('variantId', ParseIntPipe) variantId: number) {
     return this.productService.removeVariant(variantId);
@@ -124,16 +125,16 @@ export class ProductController {
   }
 
   // GET /api/products/admin/:id (admin only)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('products', 'read')
   @Get('admin/:id')
   findOneAdmin(@Param('id', ParseIntPipe) id: number) {
     return this.productService.findOne(id);
   }
 
   // PATCH /api/products/:id (admin only)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('products', 'update')
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -143,8 +144,8 @@ export class ProductController {
   }
 
   // PATCH /api/products/:id/main-image (admin only)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('products', 'update')
   @Patch(':id/main-image')
   updateMainImage(
     @Param('id', ParseIntPipe) id: number,
@@ -154,8 +155,8 @@ export class ProductController {
   }
 
   // DELETE /api/products/:id (admin only)
-  @UseGuards(RolesGuard)
-  @Roles('ADMIN')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('products', 'delete')
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.productService.remove(id);
