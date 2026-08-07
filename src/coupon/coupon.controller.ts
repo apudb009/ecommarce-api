@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  Request,
   Query,
 } from '@nestjs/common';
 import { CouponService } from './coupon.service';
@@ -18,6 +17,8 @@ import { ApplyCouponDto } from './dto/apply-coupon.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { FilterCouponDto } from './dto/filter-coupon.dto';
 import { PermissionGuard } from 'src/auth/guards/permission.guard';
+import { User } from 'src/common/decorators/user.decorator';
+import type { JwtUser } from 'src/types/express';
 
 @ApiBearerAuth('access-token')
 @Controller('api/coupons')
@@ -66,10 +67,7 @@ export class CouponController {
 
   // POST /api/coupons/validate (customer)
   @Post('validate')
-  validate(
-    @Body() dto: ApplyCouponDto,
-    @Request() req: { user: { sub: number } },
-  ) {
-    return this.couponService.validate(dto.code, req.user.sub, dto.orderAmount);
+  validate(@Body() dto: ApplyCouponDto, @User() user: JwtUser) {
+    return this.couponService.validate(dto.code, user.sub, dto.orderAmount);
   }
 }

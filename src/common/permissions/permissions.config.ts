@@ -18,6 +18,7 @@ export const MODULES = [
   'wishlists',
   'scheduler',
   'roles',
+  'newsletters',
 ] as const;
 
 export const ACTIONS = ['create', 'read', 'update', 'delete'] as const;
@@ -52,4 +53,5 @@ export const MODULE_LABELS: Record<Module, string> = {
   wishlists: 'Wishlists',
   scheduler: 'Scheduler',
   roles: 'Roles & Permissions',
+  newsletters: 'Newsletters',
 };
