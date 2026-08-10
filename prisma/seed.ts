@@ -54,6 +54,20 @@ async function main() {
   }
 
   console.log('✅ Seeding + admin role adding completed');
+
+  console.log('🌱 Assigning ADMIN role to ADMIN USER...');
+
+  const adminUser = await prisma.user.findFirst({
+    where: { role: 'ADMIN' },
+  });
+  if (adminUser) {
+    await prisma.user.update({
+      where: { id: adminUser.id },
+      data: { roleId: adminRole.id },
+    });
+  }
+
+  console.log('✅ ADMIN role assigned to ADMIN USER');
 }
 
 main()
