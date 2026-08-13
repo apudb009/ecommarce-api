@@ -68,6 +68,32 @@ export class UserService {
     });
   }
 
+  async findUser(query: string) {
+    const user = await this.prismaService.user.findFirst({
+      where: {
+        OR: [
+          { id: isNaN(Number(query)) ? undefined : Number(query) },
+          { email: { contains: query, mode: QueryMode.insensitive } },
+          { name: { contains: query, mode: QueryMode.insensitive } },
+          { username: { contains: query, mode: QueryMode.insensitive } },
+        ],
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        username: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
   async getUserByUserName(username: string) {
     return await this.prismaService.user.findUnique({
       where: {

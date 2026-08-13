@@ -15,7 +15,9 @@ import { UpdateFlashSaleDto } from './dto/update-flash-sale.dto';
 import { Public, RequirePermission } from 'src/auth/constants';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { PermissionGuard } from 'src/auth/guards/permission.guard';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle({ short: true, long: true })
 @ApiBearerAuth('access-token')
 @Controller('api/flash-sales')
 export class FlashSaleController {

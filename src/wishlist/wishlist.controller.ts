@@ -11,7 +11,7 @@ import { WishlistService } from './wishlist.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
 
-@SkipThrottle()
+@SkipThrottle({ short: true, long: true })
 @ApiBearerAuth('access-token')
 @Controller('api/wishlist')
 export class WishlistController {

@@ -243,3 +243,6 @@ Content-Type: application/json
 ### Delete Review
 DELETE http://localhost:3002/api/reviews/1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiY3VzdG9tZXIxQHRlc3QuY29tIiwicm9sZSI6IkNVU1RPTUVSIiwiaWF0IjoxNzgyNDgzODAxLCJleHAiOjE3ODI0ODQ3MDF9.WabE_rf7SAHxGDozm2V41GpEquxhJ9O0FO5NVzMX-HM
+
+### Test pending orders
+GET http://localhost:3002/api/orders/test/pending

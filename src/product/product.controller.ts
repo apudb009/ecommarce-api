@@ -32,7 +32,7 @@ export class ProductController {
     return this.productService.create(createProductDto);
   }
 
-  // GET /api/products (public + search + filter)
+  // GET /api/products (admin + search + filter)
   @UseGuards(PermissionGuard)
   @RequirePermission('products', 'read')
   @Get('admin/all')

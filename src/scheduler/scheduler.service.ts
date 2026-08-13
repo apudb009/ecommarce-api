@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CronExpression, Cron } from '@nestjs/schedule';
-import { NotificationType } from 'src/generated/prisma/enums';
+import { NotificationType, PaymentStatus } from 'src/generated/prisma/enums';
 import { MailService } from 'src/mail/mail.service';
 import { NotificationService } from 'src/notification/notification.service';
 import { PrismaService } from 'src/prisma.service';
@@ -33,7 +33,11 @@ export class SchedulerService {
       where: {
         status: 'PENDING',
         createdAt: { lte: cutoff },
-        payment: { is: null },
+        OR: [
+          { payment: null },
+          { payment: { status: PaymentStatus.PENDING } },
+          { payment: { status: PaymentStatus.FAILED } },
+        ],
       },
       include: {
         items: true,

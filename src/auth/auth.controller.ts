@@ -16,7 +16,7 @@ import { Throttle } from '@nestjs/throttler';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 
-@Throttle({ short: { ttl: 60000, limit: 5 } }) // 5 attempts per minute
+@Throttle({ short: { ttl: 60000, limit: 10 } }) // 10 attempts per minute
 @Controller('api/auth')
 export class AuthController {
   constructor(private authService: AuthService) {}

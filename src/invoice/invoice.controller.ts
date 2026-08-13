@@ -18,6 +18,7 @@ import { InvoiceStatus } from 'src/generated/prisma/enums';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { FilterInvoiceDto } from './dto/filter-invoice.dto';
 import { PermissionGuard } from 'src/auth/guards/permission.guard';
+import { User } from 'src/common/decorators/user.decorator';
 
 @ApiBearerAuth('access-token')
 @Controller('api/invoices')
@@ -35,8 +36,11 @@ export class InvoiceController {
 
   // GET /api/invoices
   @Get()
-  async getMyInvoices(@Request() req: { user: { sub: number } }) {
-    return await this.invoice.getMyInvoices(req.user.sub);
+  async getMyInvoices(
+    @Query() filter: FilterInvoiceDto,
+    @User('sub') sub: number,
+  ) {
+    return await this.invoice.getMyInvoices(filter, sub);
   }
 
   // GET /api/invoices/admin/all

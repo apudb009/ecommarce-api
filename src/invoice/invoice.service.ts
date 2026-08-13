@@ -23,9 +23,7 @@ export class InvoiceService {
   private async generateInvoiceNumber(): Promise<string> {
     const year = new Date().getFullYear();
     const invoiceCount = await this.prisma.invoice.count();
-    const invoiceNumber = `INV-${year}-${(invoiceCount + 1)
-      .toString()
-      .padStart(5, '0')}`;
+    const invoiceNumber = `INV-${year}-${(invoiceCount + 1).toString().padStart(5, '0')}`;
     return invoiceNumber;
   }
 
@@ -86,26 +84,72 @@ export class InvoiceService {
   }
 
   // ── GET MY INVOICES ────────────────────────────────
-  async getMyInvoices(userId: number) {
-    return await this.prisma.invoice.findMany({
-      where: { userId },
-      include: {
-        order: {
-          select: {
-            id: true,
-            totalAmount: true,
-            grandTotalAmount: true,
-            status: true,
-            createdAt: true,
+  async getMyInvoices(filter: FilterInvoiceDto, userId: number) {
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      status,
+      search,
+    } = filter;
+
+    const skip = (page - 1) * limit;
+
+    const where = {
+      userId,
+      ...(status && { status }),
+      ...(search && {
+        OR: [
+          { id: isNaN(Number(search)) ? undefined : Number(search) },
+          {
+            invoiceNo: search
+              ? { contains: search, mode: QueryMode.insensitive }
+              : undefined,
+          },
+        ].filter(Boolean),
+      }),
+    };
+
+    const [invoices, total] = await Promise.all([
+      this.prisma.invoice.findMany({
+        where,
+        include: {
+          order: {
+            select: {
+              id: true,
+              totalAmount: true,
+              grandTotalAmount: true,
+              status: true,
+              createdAt: true,
+            },
           },
         },
+        orderBy: [
+          {
+            [sortBy]: sortOrder,
+          },
+        ],
+        skip,
+        take: limit,
+      }),
+      this.prisma.invoice.count({
+        where,
+      }),
+    ]);
+
+    return {
+      data: invoices,
+      meta: {
+        total,
+        page,
+        limit,
+        hasNextPage: total > page * limit,
+        lastPage: Math.ceil(total / limit),
+        hasPrevPage: page > 1,
+        hasPage: total > 0,
       },
-      orderBy: [
-        {
-          createdAt: 'desc',
-        },
-      ],
-    });
+    };
   }
 
   // ── GET ONE ────────────────────────────────────────
