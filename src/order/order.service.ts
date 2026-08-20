@@ -337,7 +337,7 @@ export class OrderService {
         where,
         skip,
         take: limit,
-        include: this.getIncludes(),
+        select: this.getSelectes(),
         orderBy: {
           [sortBy]: sortOrder,
         },
@@ -494,6 +494,23 @@ export class OrderService {
           email: true,
           name: true,
           username: true,
+        },
+      },
+    };
+  }
+
+  private getSelectes() {
+    return {
+      items: {
+        select: {
+          id: true,
+          total: true,
+        },
+      },
+      user: {
+        select: {
+          email: true,
+          name: true,
         },
       },
     };

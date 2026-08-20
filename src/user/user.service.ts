@@ -156,26 +156,8 @@ export class UserService {
           id: true,
           email: true,
           name: true,
-          username: true,
           role: true,
           createdAt: true,
-          userRole: {
-            select: {
-              id: true,
-              name: true,
-              isSystem: true,
-              permissions: {
-                select: {
-                  permission: {
-                    select: {
-                      module: true,
-                      action: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
         },
       }),
       this.prismaService.user.count({ where }),

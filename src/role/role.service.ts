@@ -13,10 +13,20 @@ export class RoleService {
   // ── GET ALL ROLES ──────────────────────────────────
   async findAll() {
     return await this.prisma.role.findMany({
-      include: {
+      select: {
+        id: true,
+        description: true,
+        isSystem: true,
+        name: true,
         permissions: {
-          include: {
-            permission: true,
+          select: {
+            permission: {
+              select: {
+                module: true,
+                action: true,
+                id: true,
+              },
+            },
           },
         },
         _count: {

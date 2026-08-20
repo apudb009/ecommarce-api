@@ -30,7 +30,10 @@ export class TaxService {
   }
 
   async findAll() {
-    return await this.prisma.tax.findMany();
+    return await this.prisma.tax.findMany({
+      select: { id: true, rate: true, type: true, isActive: true, name: true },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async findOne(id: number) {

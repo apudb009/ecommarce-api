@@ -50,6 +50,11 @@ export class NewsletterService {
         where,
         skip,
         take: limit,
+        select: {
+          id: true,
+          email: true,
+          isActive: true,
+        },
         orderBy: {
           [sortBy]: sortOrder,
         },

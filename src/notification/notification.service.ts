@@ -6,6 +6,8 @@ import {
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { PrismaService } from 'src/prisma.service';
 import { NotificationType } from 'src/generated/prisma/enums';
+import { FilterNotificationDto } from './dto/filter-notification.dto';
+import { QueryMode } from 'src/generated/prisma/internal/prismaNamespace';
 
 @Injectable()
 export class NotificationService {
@@ -157,11 +159,61 @@ export class NotificationService {
   }
 
   // ── FIND ALL ─
-  async findAll() {
-    return await this.prisma.notification.findMany({
-      include: {
-        user: { select: { id: true, name: true, email: true, username: true } },
+  async findAll(filter: FilterNotificationDto) {
+    const {
+      page = 1,
+      limit = 10,
+      type,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = filter;
+
+    const skip = (page - 1) * limit;
+
+    const where = {
+      ...(type && { type }),
+      ...(search && {
+        OR: [
+          { id: isNaN(Number(search)) ? undefined : Number(search) },
+          { title: { contains: search, mode: QueryMode.insensitive } },
+          { message: { contains: search, mode: QueryMode.insensitive } },
+        ].filter(Boolean),
+      }),
+    };
+
+    const [notifications, total] = await Promise.all([
+      this.prisma.notification.findMany({
+        where,
+        select: {
+          id: true,
+          type: true,
+          title: true,
+          message: true,
+          //link: true,
+          createdAt: true,
+          isRead: true,
+          user: {
+            select: { name: true },
+          },
+        },
+        orderBy: { [sortBy]: sortOrder },
+        skip,
+        take: limit,
+      }),
+      this.prisma.notification.count({ where }),
+    ]);
+
+    return {
+      data: notifications,
+      meta: {
+        total,
+        page,
+        limit,
+        lastPage: Math.ceil(total / limit),
+        hasNextPage: total > page * limit,
+        hasPrevPage: page > 1,
       },
-    });
+    };
   }
 }

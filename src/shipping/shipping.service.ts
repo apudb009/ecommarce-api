@@ -17,7 +17,10 @@ export class ShippingService {
   }
 
   async findAll() {
-    return await this.prisma.shipping.findMany();
+    return await this.prisma.shipping.findMany({
+      select: { id: true, name: true, price: true, isActive: true },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async getActive() {

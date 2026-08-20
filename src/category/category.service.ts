@@ -36,7 +36,10 @@ export class CategoryService {
   // ── GET ALL ────────────────────────────────────────
   async findAll() {
     return await this.prisma.category.findMany({
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
         _count: {
           select: {
             products: true,

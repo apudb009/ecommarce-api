@@ -60,6 +60,16 @@ export class CouponService {
         where,
         skip,
         take: limit,
+        select: {
+          id: true,
+          code: true,
+          type: true,
+          value: true,
+          maxUses: true,
+          usedCount: true,
+          isActive: true,
+          expiresAt: true,
+        },
         orderBy: {
           [sortBy]: sortOrder,
         },

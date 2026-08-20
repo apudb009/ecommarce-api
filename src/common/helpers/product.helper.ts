@@ -56,13 +56,11 @@ export class ProductHelper {
         select: {
           id: true,
           name: true,
-          //slug: true,
-          //description: true,
           price: true,
           stock: true,
           isActive: true,
           images: { select: { url: true, isMain: true } },
-          category: { select: { id: true, name: true } },
+          category: { select: { name: true } },
         },
       }),
       this.prisma.product.count({

@@ -8,12 +8,14 @@ import {
   Request,
   UseGuards,
   Post,
+  Query,
 } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { RequirePermission } from 'src/auth/constants';
 import { NotificationType } from 'src/generated/prisma/enums';
 import { PermissionGuard } from 'src/auth/guards/permission.guard';
+import { FilterNotificationDto } from './dto/filter-notification.dto';
 
 @ApiBearerAuth('access-token')
 @Controller('api/notifications')
@@ -29,8 +31,9 @@ export class NotificationController {
   @UseGuards(PermissionGuard)
   @RequirePermission('notifications', 'read')
   @Get('admin/all')
-  getAllNotifications() {
-    return this.notificationService.findAll();
+  getAllNotifications(@Query() filter: FilterNotificationDto) {
+    console.log(filter);
+    return this.notificationService.findAll(filter);
   }
 
   // POST /api/notifications/send  (send to specific user)

@@ -270,21 +270,20 @@ export class InvoiceService {
         where,
         skip,
         take: limit,
-        include: {
-          order: {
-            select: {
-              id: true,
-              grandTotalAmount: true,
-              status: true,
-              createdAt: true,
-            },
-          },
+        select: {
+          id: true,
+          invoiceNo: true,
+          status: true,
+          issuedAt: true,
+          orderId: true,
           user: {
             select: {
-              id: true,
               name: true,
-              email: true,
-              username: true,
+            },
+          },
+          order: {
+            select: {
+              grandTotalAmount: true,
             },
           },
         },

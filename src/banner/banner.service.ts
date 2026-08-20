@@ -31,6 +31,14 @@ export class BannerService {
   // ── GET ALL (admin) ────────────────────────────────
   async findAll() {
     return this.prisma.banner.findMany({
+      select: {
+        id: true,
+        title: true,
+        position: true,
+        subtitle: true,
+        image: true,
+        isActive: true,
+      },
       orderBy: { position: 'asc' },
     });
   }
