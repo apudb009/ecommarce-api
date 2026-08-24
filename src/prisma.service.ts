@@ -10,7 +10,14 @@ export class PrismaService
   constructor() {
     const connectionString = `${process.env.DATABASE_URL}`;
     const adapter = new PrismaPg({ connectionString });
-    super({ adapter });
+    const queryLoggingEnabled = process.env.PRISMA_QUERY_LOG === 'true';
+
+    super({
+      adapter,
+      ...(queryLoggingEnabled && {
+        log: [{ emit: 'stdout', level: 'query' }],
+      }),
+    });
   }
 
   async onModuleInit() {

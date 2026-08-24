@@ -97,6 +97,8 @@ export class ProductController {
     );
   }
 
+  @UseGuards(PermissionGuard)
+  @RequirePermission('products', 'update')
   @Patch('variants/:variantId')
   updateVariant(
     @Param('variantId', ParseIntPipe) variantId: number,

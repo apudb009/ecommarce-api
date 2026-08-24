@@ -499,9 +499,13 @@ export class OrderService {
     };
   }
 
-  private getSelectes() {
+  private getSelectes(withItems?: true) {
     return {
-      items: {
+      id: true,
+      status: true,
+      createdAt: true,
+      grandTotalAmount: true,
+      items: withItems && {
         select: {
           id: true,
           total: true,

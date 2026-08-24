@@ -90,9 +90,26 @@ export class ProductService {
       include: {
         category: { select: { id: true, name: true, slug: true } },
         images: { select: { url: true, id: true, isMain: true } },
-        variants: true,
+        variants: {
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            stock: true,
+            value: true,
+            sku: true,
+            isActive: true,
+            color: true,
+            images: {
+              select: { url: true, id: true, isMain: true, order: true },
+            },
+          },
+        },
         reviews: {
-          include: {
+          select: {
+            id: true,
+            rating: true,
+            comment: true,
             user: { select: { id: true, email: true, name: true } },
           },
           orderBy: {

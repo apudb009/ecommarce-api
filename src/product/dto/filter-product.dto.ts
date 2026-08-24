@@ -6,6 +6,7 @@ import {
   IsBoolean,
   Min,
   IsArray,
+  Max,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { ToBoolean } from 'src/common/decorators/to-boolean.decorator';
@@ -21,6 +22,7 @@ export class FilterProductDto {
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(100)
   @Type(() => Number)
   limit?: number = 12;
 
@@ -49,7 +51,7 @@ export class FilterProductDto {
 
   @IsOptional()
   @IsBoolean()
-  @Type(() => Boolean)
+  @ToBoolean()
   inStock?: boolean;
 
   // ── variant filters ─────────────────────────────

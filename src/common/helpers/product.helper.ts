@@ -253,20 +253,21 @@ export class ProductHelper {
     }>[],
     minRating?: number,
   ) {
-    const productsWithAvgRating = await Promise.all(
-      products.map(async (product) => {
-        const avg = await this.prisma.review.aggregate({
-          _avg: { rating: true },
-          where: { productId: product.id },
-        });
-        return {
-          ...product,
-          avgRating: avg._avg.rating
-            ? Number(avg._avg.rating.toFixed(1))
-            : null,
-        };
-      }),
-    );
+    const ratings = await this.prisma.review.groupBy({
+      by: ['productId'],
+      where: { productId: { in: products.map((p) => p.id) } },
+      _avg: { rating: true },
+    });
+
+    const productsWithAvgRating = products.map((product) => {
+      const avg = ratings.find((r) => r.productId === product.id);
+      return {
+        ...product,
+        avgRating: avg!._avg.rating
+          ? Number(avg!._avg.rating.toFixed(1))
+          : null,
+      };
+    });
 
     // ── apply rating filter (post-query) ─────────────
     const filtered = minRating
