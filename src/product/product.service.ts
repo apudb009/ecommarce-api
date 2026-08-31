@@ -12,6 +12,8 @@ import { ProductHelper } from 'src/common/helpers/product.helper';
 import { ProductImageService } from 'src/product_image/product_image.service';
 import { CreateVariantDto } from './dto/create-variant.dto';
 import { ProductVariantImageService } from 'src/product_variant_image/product_variant_image.service';
+import { CacheService } from 'src/common/cache/cache.service';
+import { CacheKeys, CacheTags, CacheTTL } from 'src/common/cache/cache-keys';
 
 @Injectable()
 export class ProductService {
@@ -21,6 +23,7 @@ export class ProductService {
     private helper: ProductHelper,
     private productImage: ProductImageService,
     private variantImage: ProductVariantImageService,
+    private cache: CacheService,
   ) {}
 
   // ── CREATE ─────────────────────────────────────────
@@ -40,7 +43,7 @@ export class ProductService {
     }
     const { images, ...productData } = dto;
 
-    return await this.prisma.$transaction(async (tx) => {
+    const product = await this.prisma.$transaction(async (tx) => {
       const product = await tx.product.create({
         data: {
           ...productData,
@@ -64,13 +67,23 @@ export class ProductService {
         },
       });
     });
+
+    this.invalidateProductCache();
+    return product;
   }
 
   // ── GET ALL (with search, filter, pagination) ──────
   async findAll(fiterDto: FilterProductDto) {
-    const productsWithMeta = await this.helper.getAllProductsWithMeta(fiterDto);
+    const key = CacheKeys.PRODUCTS_LISTING(fiterDto);
+    return this.cache.getOrSet(
+      key,
+      async () => await this.helper.getAllProductsWithMeta(fiterDto),
+      CacheTTL.SHORT,
+      [CacheTags.PRODUCTS],
+    );
+    //const productsWithMeta = await this.helper.getAllProductsWithMeta(fiterDto);
 
-    return productsWithMeta;
+    //return productsWithMeta;
   }
 
   // ── GET ALL FOR ADMIN (with search, filter, pagination) ──────
@@ -83,6 +96,16 @@ export class ProductService {
 
   // ── GET ONE BY SLUG ────────────────────────────────
   async findOneBySlug(slug: string) {
+    const key = CacheKeys.PRODUCT_BY_SLUG(slug);
+
+    return this.cache.getOrSet(
+      key,
+      async () => await this.getProductDetailsBySlug(slug),
+      CacheTTL.MEDIUM,
+      [CacheTags.PRODUCTS],
+    );
+
+    /*
     const product = await this.prisma.product.findFirst({
       where: {
         slug,
@@ -146,6 +169,7 @@ export class ProductService {
         ? Number(avgRating._avg.rating.toFixed(1))
         : null,
     };
+    */
   }
 
   // ── GET ONE BY ID (internal use) ───────────────────
@@ -179,7 +203,7 @@ export class ProductService {
 
     const { images, ...productData } = dto;
 
-    return await this.prisma.$transaction(async (tx) => {
+    const product = await this.prisma.$transaction(async (tx) => {
       const product = await tx.product.update({
         where: {
           id,
@@ -204,6 +228,10 @@ export class ProductService {
         },
       });
     });
+
+    this.invalidateProductCache(product!.slug);
+
+    return product;
   }
 
   // ── SET MAIN IMAGE ─────────────────────────────────────
@@ -215,9 +243,9 @@ export class ProductService {
   // ── DELETE ─────────────────────────────────────────
   async remove(id: number) {
     //Check product existance
-    await this.findOne(id);
+    const product = await this.findOne(id);
 
-    return await this.prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx) => {
       await tx.product.delete({
         where: {
           id,
@@ -225,6 +253,8 @@ export class ProductService {
       });
       await this.productImage.deleteImages(id, tx);
     });
+
+    this.invalidateProductCache(product.slug);
   }
 
   // ── ADJUST STOCK ───────────────────────────────────
@@ -252,6 +282,15 @@ export class ProductService {
 
   // ── HOT PRODUCTS (newest + high rated) ────────────
   async getHotProducts(limit = 10) {
+    const key = CacheKeys.PRODUCTS_HOT(limit);
+
+    return this.cache.getOrSet(
+      key,
+      async () => await this.getAllHotProducts(limit),
+      CacheTTL.MEDIUM,
+      [CacheTags.PRODUCTS],
+    );
+    /*
     const products = await this.prisma.product.findMany({
       where: { isActive: true, stock: { gt: 0 } },
       take: limit,
@@ -264,11 +303,22 @@ export class ProductService {
     });
 
     return await this.helper.withAvgRating(products);
+    */
   }
 
   // ── BEST SELLERS (most ordered) ────────────────────
   async getBestSellers(limit = 10) {
     // get product ids ordered by how many times they appear in orders
+    const key = CacheKeys.PRODUCTS_BEST_SELLERS(limit);
+
+    return this.cache.getOrSet(
+      key,
+      async () => await this.getAllBestSeller(limit),
+      CacheTTL.MEDIUM,
+      [CacheTags.PRODUCTS],
+    );
+
+    /*
     const bestSellers = await this.prisma.orderItem.groupBy({
       by: ['productId'],
       _sum: {
@@ -307,6 +357,7 @@ export class ProductService {
       .filter(Boolean);
 
     return await this.helper.withAvgRating(sorted as typeof products);
+    */
   }
 
   // ── ADD VARIANT ────────────────────────────────────
@@ -441,6 +492,141 @@ export class ProductService {
         .replace(/^-|-$/g, '');
 
     return [slug(productName), ...variantValues.map(slug)].join('-');
+  }
+
+  private async getProductDetailsBySlug(slug: string) {
+    const product = await this.prisma.product.findFirst({
+      where: {
+        slug,
+      },
+      include: {
+        category: { select: { id: true, name: true, slug: true } },
+        images: { select: { url: true, id: true, isMain: true } },
+        variants: {
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            stock: true,
+            value: true,
+            sku: true,
+            isActive: true,
+            color: true,
+            images: {
+              select: { url: true, id: true, isMain: true, order: true },
+            },
+          },
+        },
+        reviews: {
+          select: {
+            id: true,
+            rating: true,
+            comment: true,
+            user: { select: { id: true, email: true, name: true } },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 10,
+        },
+        _count: {
+          select: {
+            reviews: true,
+          },
+        },
+      },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    //For inactive product
+    if (!product.isActive) {
+      throw new NotFoundException('Product not found');
+    }
+
+    // calculate average rating
+    const avgRating = await this.prisma.review.aggregate({
+      _avg: { rating: true },
+      where: { productId: product.id },
+    });
+
+    return {
+      ...product,
+      avgRating: avgRating._avg.rating
+        ? Number(avgRating._avg.rating.toFixed(1))
+        : null,
+    };
+  }
+
+  private async getAllHotProducts(limit = 10) {
+    const products = await this.prisma.product.findMany({
+      where: { isActive: true, stock: { gt: 0 } },
+      take: limit,
+      include: {
+        category: { select: { id: true, name: true, slug: true } },
+        images: { select: { url: true, id: true, isMain: true } },
+        _count: { select: { reviews: true } },
+      },
+      orderBy: { createdAt: 'desc' }, // newest first
+    });
+
+    return await this.helper.withAvgRating(products);
+  }
+
+  private async getAllBestSeller(limit = 10) {
+    const bestSellers = await this.prisma.orderItem.groupBy({
+      by: ['productId'],
+      _sum: {
+        quantity: true,
+      },
+      orderBy: {
+        _sum: {
+          quantity: 'desc',
+        },
+      },
+      take: limit,
+    });
+
+    if (bestSellers.length === 0) {
+      return await this.getHotProducts(limit);
+    }
+
+    const productIds = bestSellers.map((item) => item.productId);
+
+    const products = await this.prisma.product.findMany({
+      where: {
+        id: { in: productIds },
+        isActive: true,
+        stock: { gt: 0 },
+      },
+      include: {
+        category: { select: { id: true, name: true, slug: true } },
+        images: { select: { url: true, id: true, isMain: true } },
+        variants: true,
+        _count: { select: { reviews: true } },
+      },
+    });
+
+    const sorted = productIds
+      .map((id) => products.find((p) => p.id === id))
+      .filter(Boolean);
+
+    return await this.helper.withAvgRating(sorted as typeof products);
+  }
+
+  private invalidateProductCache(slug?: string) {
+    // clear specific product
+    if (slug) {
+      this.cache.delete(CacheKeys.PRODUCT_BY_SLUG(slug));
+    }
+
+    // clear all listings (filters, pages, searches)
+    this.cache.deleteByTag(CacheTags.PRODUCTS);
+
+    // clear homepage (contains product sliders)
+    this.cache.delete(CacheKeys.HOMEPAGE_DATA);
   }
 
   async getFilters(categoryId?: number) {

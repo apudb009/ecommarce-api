@@ -8,12 +8,15 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from 'src/prisma.service';
 import { FilterProductDto } from 'src/product/dto/filter-product.dto';
 import { ProductHelper } from 'src/common/helpers/product.helper';
+import { CacheService } from 'src/common/cache/cache.service';
+import { CacheKeys, CacheTags, CacheTTL } from 'src/common/cache/cache-keys';
 
 @Injectable()
 export class CategoryService {
   constructor(
     private prisma: PrismaService,
     private helper: ProductHelper,
+    private cache: CacheService,
   ) {}
 
   // ── CREATE ─────────────────────────────────────────
@@ -28,13 +31,41 @@ export class CategoryService {
     if (categoryExist) {
       throw new ConflictException('Category already exist');
     }
-    return await this.prisma.category.create({
+    const category = await this.prisma.category.create({
       data: createCategoryDto,
     });
+
+    this.cache.delete(CacheKeys.CATEGORIES_ALL);
+
+    return category;
   }
 
   // ── GET ALL ────────────────────────────────────────
   async findAll() {
+    const key = CacheKeys.CATEGORIES_ALL;
+    return this.cache.getOrSet(
+      key,
+      async () =>
+        await this.prisma.category.findMany({
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            _count: {
+              select: {
+                products: true,
+              },
+            },
+          },
+          orderBy: {
+            name: 'asc',
+          },
+        }),
+      CacheTTL.VERY_LONG,
+      [CacheTags.CATEGORIES],
+    );
+
+    /*
     return await this.prisma.category.findMany({
       select: {
         id: true,
@@ -50,10 +81,76 @@ export class CategoryService {
         name: 'asc',
       },
     });
+    */
   }
 
   // ── GET ONE BY SLUG ────────────────────────────────
   async findOneBySlug(slug: string, filterDto: FilterProductDto) {
+    const key = CacheKeys.CATEGORY_BY_SLUG(slug);
+
+    return this.cache.getOrSet(
+      key,
+      async () => await this.getCategoryBySlug(slug, filterDto),
+      CacheTTL.MEDIUM,
+      [CacheTags.CATEGORIES],
+    );
+  }
+
+  // ── GET ONE BY ID ──────────────────────────────────
+  async findOne(id: number) {
+    const category = await this.prisma.category.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+    return category;
+  }
+
+  // ── UPDATE ─────────────────────────────────────────
+  async update(id: number, dto: UpdateCategoryDto) {
+    await this.findOne(id);
+    const category = await this.prisma.category.update({
+      where: {
+        id,
+      },
+      data: dto,
+    });
+    this.cache.delete(CacheKeys.CATEGORY_BY_SLUG(category.slug));
+    return category;
+  }
+
+  // ── DELETE ─────────────────────────────────────────
+  async remove(id: number) {
+    await this.findOne(id);
+
+    //Check category has products
+    const categoryProductCount = await this.prisma.product.count({
+      where: {
+        categoryId: id,
+      },
+    });
+
+    if (categoryProductCount > 0) {
+      throw new ConflictException(
+        `Cannot delete category with ${categoryProductCount} products. Move or delete products first.`,
+      );
+    }
+
+    await this.prisma.category.delete({
+      where: {
+        id,
+      },
+    });
+
+    this.cache.deleteByTag(CacheTags.CATEGORIES);
+  }
+
+  // ── Helpers ───────────────────────────────────
+  async getCategoryBySlug(slug: string, filterDto: FilterProductDto) {
     const category = await this.prisma.category.findFirst({
       where: {
         slug,
@@ -78,54 +175,5 @@ export class CategoryService {
       data: category,
       products,
     };
-  }
-
-  // ── GET ONE BY ID ──────────────────────────────────
-  async findOne(id: number) {
-    const category = await this.prisma.category.findUnique({
-      where: {
-        id,
-      },
-    });
-
-    if (!category) {
-      throw new NotFoundException('Category not found');
-    }
-    return category;
-  }
-
-  // ── UPDATE ─────────────────────────────────────────
-  async update(id: number, dto: UpdateCategoryDto) {
-    await this.findOne(id);
-    return await this.prisma.category.update({
-      where: {
-        id,
-      },
-      data: dto,
-    });
-  }
-
-  // ── DELETE ─────────────────────────────────────────
-  async remove(id: number) {
-    await this.findOne(id);
-
-    //Check category has products
-    const categoryProductCount = await this.prisma.product.count({
-      where: {
-        categoryId: id,
-      },
-    });
-
-    if (categoryProductCount > 0) {
-      throw new ConflictException(
-        `Cannot delete category with ${categoryProductCount} products. Move or delete products first.`,
-      );
-    }
-
-    return await this.prisma.category.delete({
-      where: {
-        id,
-      },
-    });
   }
 }

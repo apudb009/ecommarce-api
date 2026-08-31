@@ -7,10 +7,15 @@ import { CreateFlashSaleDto } from './dto/create-flash-sale.dto';
 import { UpdateFlashSaleDto } from './dto/update-flash-sale.dto';
 import { PrismaService } from 'src/prisma.service';
 import { DiscountType } from 'src/generated/prisma/enums';
+import { CacheKeys, CacheTags, CacheTTL } from 'src/common/cache/cache-keys';
+import { CacheService } from 'src/common/cache/cache.service';
 
 @Injectable()
 export class FlashSaleService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cache: CacheService,
+  ) {}
 
   // ── CREATE ─────────────────────────────────────────
   async create(dto: CreateFlashSaleDto) {
@@ -21,7 +26,7 @@ export class FlashSaleService {
       throw new BadRequestException('Start time must be before end time');
     }
 
-    return await this.prisma.flashSale.create({
+    const sale = await this.prisma.flashSale.create({
       data: {
         name: dto.name,
         description: dto.description,
@@ -37,6 +42,9 @@ export class FlashSaleService {
       },
       include: this.flashSaleInclude(),
     });
+
+    this.cache.deleteByTag(CacheTags.FLASH_SALES);
+    return sale;
   }
 
   // ── GET ALL (admin) ────────────────────────────────
@@ -50,15 +58,22 @@ export class FlashSaleService {
   // ── GET ACTIVE (public) ────────────────────────────
   async findActive() {
     const now = new Date();
-    return await this.prisma.flashSale.findMany({
-      where: {
-        isActive: true,
-        endTime: { gte: now },
-        startTime: { lte: now },
-      },
-      include: this.flashSaleInclude(),
-      orderBy: { endTime: 'asc' },
-    });
+    const key = CacheKeys.FLASH_SALES_ACTIVE;
+    return this.cache.getOrSet(
+      key,
+      async () =>
+        await this.prisma.flashSale.findMany({
+          where: {
+            isActive: true,
+            endTime: { gte: now },
+            startTime: { lte: now },
+          },
+          include: this.flashSaleInclude(),
+          orderBy: { endTime: 'asc' },
+        }),
+      CacheTTL.VERY_SHORT,
+      [CacheTags.FLASH_SALES],
+    );
   }
 
   // ── GET UPCOMING (public) ──────────────────────────
@@ -99,7 +114,7 @@ export class FlashSaleService {
       }
     }
 
-    return await this.prisma.flashSale.update({
+    const flashSale = await this.prisma.flashSale.update({
       where: { id },
       data: {
         name: dto.name,
@@ -117,13 +132,19 @@ export class FlashSaleService {
       },
       include: this.flashSaleInclude(),
     });
+
+    this.cache.deleteByTag(CacheTags.FLASH_SALES);
+
+    return flashSale;
   }
 
   // ── DELETE ─────────────────────────────────────────
   async remove(id: number) {
-    return await this.prisma.flashSale.delete({
+    await this.prisma.flashSale.delete({
       where: { id },
     });
+
+    this.cache.deleteByTag(CacheTags.FLASH_SALES);
   }
 
   // ── ADD PRODUCTS ───────────────────────────────────

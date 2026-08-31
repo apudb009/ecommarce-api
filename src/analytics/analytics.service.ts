@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { CacheKeys, CacheTags, CacheTTL } from 'src/common/cache/cache-keys';
+import { CacheService } from 'src/common/cache/cache.service';
 import { OrderStatus } from 'src/generated/prisma/enums';
 import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class AnalyticsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cache: CacheService,
+  ) {}
 
   // ── OVERVIEW STATS ─────────────────────────────────
   async getOverview() {
@@ -131,19 +136,28 @@ export class AnalyticsService {
 
   // ── TOP SELLING PRODUCTS ───────────────────────────
   async getTopProducts(limit = 5) {
-    const topItems = await this.prisma.orderItem.groupBy({
-      by: ['productId', 'productName'],
-      _sum: { quantity: true, total: true },
-      orderBy: { _sum: { total: 'desc' } },
-      take: limit,
-    });
+    const key = CacheKeys.ANALYTICS_TOP_PRODUCTS(limit);
 
-    return topItems.map((item) => ({
-      productId: item.productId,
-      productName: item.productName,
-      totalSold: item._sum.quantity || 0,
-      revenue: Number(item._sum.total || 0),
-    }));
+    return this.cache.getOrSet(
+      key,
+      async () => {
+        const topItems = await this.prisma.orderItem.groupBy({
+          by: ['productId', 'productName'],
+          _sum: { quantity: true, total: true },
+          orderBy: { _sum: { total: 'desc' } },
+          take: limit,
+        });
+
+        return topItems.map((item) => ({
+          productId: item.productId,
+          productName: item.productName,
+          totalSold: item._sum.quantity || 0,
+          revenue: Number(item._sum.total || 0),
+        }));
+      },
+      CacheTTL.ANALYTICS,
+      [CacheTags.ANALYTICS],
+    );
   }
 
   // ── REVENUE BY CATEGORY ────────────────────────────

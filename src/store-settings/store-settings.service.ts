@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { CacheKeys, CacheTags, CacheTTL } from 'src/common/cache/cache-keys';
+import { CacheService } from 'src/common/cache/cache.service';
 import { PrismaService } from 'src/prisma.service';
 
 // all default settings with types
@@ -30,7 +32,10 @@ const DEFAULT_SETTINGS = [
 
 @Injectable()
 export class StoreSettingsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cache: CacheService,
+  ) {}
 
   // ── SEED DEFAULT SETTINGS ──────────────────────────
   async seedDefaultSettings() {
@@ -46,7 +51,16 @@ export class StoreSettingsService {
   // ── GET ALL ────────────────────────────────────────
   async findAll() {
     await this.seedDefaultSettings();
+    const key = CacheKeys.SETTINGS_ALL;
 
+    return this.cache.getOrSet(
+      key,
+      async () => await this.getAllSettings(),
+      CacheTTL.LONG,
+      [CacheTags.SETTINGS],
+    );
+
+    /*
     const settings = await this.prisma.storeSetting.findMany({
       orderBy: { key: 'asc' },
     });
@@ -56,14 +70,24 @@ export class StoreSettingsService {
       (acc, setting) => ({ ...acc, [setting.key]: this.parseValue(setting) }),
       {} as Record<string, string | number | boolean | object>,
     );
+    */
   }
 
   // ── GET ONE ────────────────────────────────────────
   async findOne(key: string) {
-    const setting = await this.prisma.storeSetting.findUnique({
-      where: { key },
-    });
-    return setting ? this.parseValue(setting) : null;
+    const cacheKey = CacheKeys.SETTING_BY_KEY(key);
+
+    return this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        const setting = await this.prisma.storeSetting.findUnique({
+          where: { key },
+        });
+        return setting ? this.parseValue(setting) : null;
+      },
+      CacheTTL.LONG,
+      [CacheTags.SETTINGS],
+    );
   }
 
   // ── UPDATE ONE ─────────────────────────────────────
@@ -86,6 +110,7 @@ export class StoreSettingsService {
     );
 
     await Promise.all(updates);
+    this.cache.deleteByTag(CacheTags.SETTINGS);
     return this.findAll();
   }
 
@@ -108,5 +133,17 @@ export class StoreSettingsService {
     if (!isNaN(Number(value))) return 'number';
     if (value.startsWith('{') && value.endsWith('}')) return 'json';
     return 'string';
+  }
+
+  private async getAllSettings() {
+    const settings = await this.prisma.storeSetting.findMany({
+      orderBy: { key: 'asc' },
+    });
+
+    // convert to key-value object
+    return settings.reduce(
+      (acc, setting) => ({ ...acc, [setting.key]: this.parseValue(setting) }),
+      {} as Record<string, string | number | boolean | object>,
+    );
   }
 }

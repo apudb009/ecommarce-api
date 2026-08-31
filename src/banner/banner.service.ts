@@ -3,29 +3,43 @@ import { CreateBannerDto } from './dto/create-banner.dto';
 import { UpdateBannerDto } from './dto/update-banner.dto';
 import { Public } from 'src/auth/constants';
 import { PrismaService } from 'src/prisma.service';
+import { CacheKeys, CacheTags, CacheTTL } from 'src/common/cache/cache-keys';
+import { CacheService } from 'src/common/cache/cache.service';
 
 @Injectable()
 export class BannerService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cache: CacheService,
+  ) {}
 
   // ── CREATE ─────────────────────────────────────────
   async create(dto: CreateBannerDto) {
-    return await this.prisma.banner.create({
+    const banner = await this.prisma.banner.create({
       data: dto,
     });
+    this.cache.deleteByTag(CacheTags.BANNERS);
+    return banner;
   }
 
   // ── GET ALL ACTIVE (public) ────────────────────────
   @Public()
   async findAllActive() {
-    return await this.prisma.banner.findMany({
-      where: {
-        isActive: true,
-      },
-      orderBy: {
-        position: 'asc',
-      },
-    });
+    const key = CacheKeys.BANNERS_ACTIVE;
+    return this.cache.getOrSet(
+      key,
+      async () =>
+        await this.prisma.banner.findMany({
+          where: {
+            isActive: true,
+          },
+          orderBy: {
+            position: 'asc',
+          },
+        }),
+      CacheTTL.LONG,
+      [CacheTags.BANNERS],
+    );
   }
 
   // ── GET ALL (admin) ────────────────────────────────
@@ -60,21 +74,26 @@ export class BannerService {
   // ── UPDATE ─────────────────────────────────────────
   async update(id: number, updateBannerDto: UpdateBannerDto) {
     await this.findOne(id); // Check if banner exists
-    return await this.prisma.banner.update({
+    const banner = await this.prisma.banner.update({
       where: {
         id,
       },
       data: updateBannerDto,
     });
+    this.cache.deleteByTag(CacheTags.BANNERS);
+    return banner;
   }
 
   // ── DELETE ─────────────────────────────────────────
   async remove(id: number) {
-    return await this.prisma.banner.delete({
+    const banner = await this.prisma.banner.delete({
       where: {
         id,
       },
     });
+
+    this.cache.deleteByTag(CacheTags.BANNERS);
+    return banner;
   }
 
   // ── REORDER ────────────────────────────────────────

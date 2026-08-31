@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CronExpression, Cron } from '@nestjs/schedule';
+import { CacheService } from 'src/common/cache/cache.service';
 import { NotificationType, PaymentStatus } from 'src/generated/prisma/enums';
 import { MailService } from 'src/mail/mail.service';
 import { NotificationService } from 'src/notification/notification.service';
@@ -15,6 +16,7 @@ export class SchedulerService {
     private readonly mail: MailService,
     private readonly notification: NotificationService,
     private readonly storeSettings: StoreSettingsService,
+    private readonly cache: CacheService,
   ) {}
 
   // ── 1. CANCEL PENDING ORDERS (every hour) ──────────
@@ -327,5 +329,11 @@ export class SchedulerService {
     });
 
     this.logger.log(`Deleted ${result.count} expired/used reset tokens`);
+  }
+
+  // cleanup expired cache entries every 5 minutes
+  @Cron('*/5 * * * *')
+  cleanupCache() {
+    this.cache.cleanup();
   }
 }
