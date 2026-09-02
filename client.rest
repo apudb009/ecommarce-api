@@ -82,6 +82,9 @@ GET http://localhost:3002/api/products
 ### Search + Filter
 GET http://localhost:3002/api/products?search=iphone&minPrice=500&maxPrice=1500&inStock=true
 
+### Search + Filter + Sort
+GET http://localhost:3002/api/products?page=1&limit=12&sortBy=createdAt&sortOrder=desc
+
 ### Get By Slug
 GET http://localhost:3002/api/products/iphone-15-pro
 

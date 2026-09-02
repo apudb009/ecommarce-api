@@ -263,8 +263,8 @@ export class ProductHelper {
       const avg = ratings.find((r) => r.productId === product.id);
       return {
         ...product,
-        avgRating: avg!._avg.rating
-          ? Number(avg!._avg.rating.toFixed(1))
+        avgRating: avg?._avg?.rating
+          ? Number(avg._avg.rating.toFixed(1))
           : null,
       };
     });
