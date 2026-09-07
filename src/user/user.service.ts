@@ -158,6 +158,13 @@ export class UserService {
           name: true,
           role: true,
           createdAt: true,
+          userRole: {
+            select: {
+              name: true,
+              isSystem: true,
+              id: true,
+            },
+          },
         },
       }),
       this.prismaService.user.count({ where }),
