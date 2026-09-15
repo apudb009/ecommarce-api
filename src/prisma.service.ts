@@ -9,7 +9,12 @@ export class PrismaService
 {
   constructor() {
     const connectionString = `${process.env.DATABASE_URL}`;
-    const adapter = new PrismaPg({ connectionString });
+    const adapter = new PrismaPg({
+      connectionString,
+      max: 10,
+      connectionTimeoutMillis: 5000,
+      idleTimeoutMillis: 30000,
+    });
     const queryLoggingEnabled = process.env.PRISMA_QUERY_LOG === 'true';
 
     super({
