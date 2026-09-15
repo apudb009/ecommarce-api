@@ -478,8 +478,13 @@ export class CartService {
 
     const taxStart = performance.now();
 
+    const [tax, shipping] = await Promise.all([
+      this.tax.getActive(),
+      this.shipping.getActive(),
+    ]);
+
     //Get Active tax
-    const tax = await this.tax.getActive();
+    //const tax = await this.tax.getActive();
     const taxAmount =
       tax?.type === TaxType.FIXED
         ? Number(tax?.rate ?? 0)
@@ -489,7 +494,7 @@ export class CartService {
 
     const shippingStart = performance.now();
     // Get Active shipping
-    const shipping = await this.shipping.getActive();
+    //const shipping = await this.shipping.getActive();
 
     console.log(
       `[cart] shipping: ${(performance.now() - shippingStart).toFixed(0)}ms`,
