@@ -115,7 +115,6 @@ export class CartService {
         data: {
           userId,
         },
-        //include: this.getCartInclude(),
       });
     }
 
@@ -436,9 +435,13 @@ export class CartService {
 
   // ── HELPER — calculate totals ──────────────────────
   private async formatCart(cart: CartWithItems): Promise<FormattedCart> {
+    const totalStart = performance.now();
+
     let totalAmount = 0;
     let totalItems = 0;
     let totalSaving = 0;
+
+    const flashStart = performance.now();
 
     const items: FormattedCartItem[] = await Promise.all(
       cart.items.map(async (item: CartItemWithProduct) => {
@@ -469,6 +472,12 @@ export class CartService {
       }),
     );
 
+    console.log(
+      `[cart] flashSale: ${(performance.now() - flashStart).toFixed(0)}ms`,
+    );
+
+    const taxStart = performance.now();
+
     //Get Active tax
     const tax = await this.tax.getActive();
     const taxAmount =
@@ -476,8 +485,19 @@ export class CartService {
         ? Number(tax?.rate ?? 0)
         : (totalAmount * Number(tax?.rate ?? 0)) / 100;
 
+    console.log(`[cart] tax: ${(performance.now() - taxStart).toFixed(0)}ms`);
+
+    const shippingStart = performance.now();
     // Get Active shipping
     const shipping = await this.shipping.getActive();
+
+    console.log(
+      `[cart] shipping: ${(performance.now() - shippingStart).toFixed(0)}ms`,
+    );
+
+    console.log(
+      `[cart] formatCart TOTAL: ${(performance.now() - totalStart).toFixed(0)}ms`,
+    );
     const shippingAmount = Number(shipping?.price ?? 0);
 
     //Calculate grand total
