@@ -54,6 +54,14 @@ export class CartService {
 
   // ── ADD ITEM ───────────────────────────────────────
   async addItem(userId: number, dto: CreateCartDto) {
+    const start = performance.now();
+
+    await this.prisma.$queryRaw`SELECT 1`;
+
+    console.log(
+      `[DB TEST] SELECT 1: ${(performance.now() - start).toFixed(0)}ms`,
+    );
+    /*
     const totalStart = performance.now();
     const productStart = performance.now();
     // verify product exists and is active and stock available
@@ -190,6 +198,7 @@ export class CartService {
     );
 
     return result;
+    */
   }
 
   // ── Apply Coupon ──────────────────────
