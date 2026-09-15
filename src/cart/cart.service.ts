@@ -57,7 +57,7 @@ export class CartService {
     const totalStart = performance.now();
     const productStart = performance.now();
     // verify product exists and is active and stock available
-    const product = await this.product.findOne(dto.productId);
+    const product = await this.product.findOneCart(dto.productId);
 
     console.log(
       `[cart] product.findOne: ${(performance.now() - productStart).toFixed(0)}ms`,

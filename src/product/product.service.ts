@@ -104,72 +104,6 @@ export class ProductService {
       CacheTTL.MEDIUM,
       [CacheTags.PRODUCTS],
     );
-
-    /*
-    const product = await this.prisma.product.findFirst({
-      where: {
-        slug,
-      },
-      include: {
-        category: { select: { id: true, name: true, slug: true } },
-        images: { select: { url: true, id: true, isMain: true } },
-        variants: {
-          select: {
-            id: true,
-            name: true,
-            price: true,
-            stock: true,
-            value: true,
-            sku: true,
-            isActive: true,
-            color: true,
-            images: {
-              select: { url: true, id: true, isMain: true, order: true },
-            },
-          },
-        },
-        reviews: {
-          select: {
-            id: true,
-            rating: true,
-            comment: true,
-            user: { select: { id: true, email: true, name: true } },
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
-          take: 10,
-        },
-        _count: {
-          select: {
-            reviews: true,
-          },
-        },
-      },
-    });
-
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
-
-    //For inactive product
-    if (!product.isActive) {
-      throw new NotFoundException('Product not found');
-    }
-
-    // calculate average rating
-    const avgRating = await this.prisma.review.aggregate({
-      _avg: { rating: true },
-      where: { productId: product.id },
-    });
-
-    return {
-      ...product,
-      avgRating: avgRating._avg.rating
-        ? Number(avgRating._avg.rating.toFixed(1))
-        : null,
-    };
-    */
   }
 
   // ── GET ONE BY ID (internal use) ───────────────────
@@ -190,6 +124,20 @@ export class ProductService {
     }
 
     return product;
+  }
+
+  // ── GET ONE BY ID (cart use) ───────────────────
+  async findOneCart(id: number) {
+    return await this.prisma.product.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        isActive: true,
+        stock: true,
+      },
+    });
   }
 
   // ── UPDATE ─────────────────────────────────────────
