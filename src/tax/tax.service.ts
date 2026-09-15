@@ -2,10 +2,14 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateTaxDto } from './dto/create-tax.dto';
 import { UpdateTaxDto } from './dto/update-tax.dto';
 import { PrismaService } from 'src/prisma.service';
+import { CacheService } from 'src/common/cache/cache.service';
 
 @Injectable()
 export class TaxService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cache: CacheService,
+  ) {}
   async create(createTaxDto: CreateTaxDto) {
     //Check same rate is exist or not
     const tax = await this.prisma.tax.findFirst({
@@ -41,7 +45,11 @@ export class TaxService {
   }
 
   async getActive() {
-    return await this.prisma.tax.findFirst({ where: { isActive: true } });
+    return this.cache.getOrSet(
+      'tax:active',
+      () => this.prisma.tax.findFirst({ where: { isActive: true } }),
+      600, // 10 min cache
+    );
   }
 
   async update(id: number, dto: UpdateTaxDto) {

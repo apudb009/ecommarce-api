@@ -8,13 +8,11 @@ import { UpdateCartDto } from './dto/update-cart.dto';
 import { PrismaService } from 'src/prisma.service';
 import { ProductService } from 'src/product/product.service';
 import {
-  CartItemWithProduct,
   CartWithItems,
   FormattedCart,
   FormattedCartItem,
 } from './entities/cart.entity';
 import { AddCouponToCartDto } from './dto/add-coupon-to-cart.dto';
-import { CouponService } from 'src/coupon/coupon.service';
 import { TaxService } from 'src/tax/tax.service';
 import { TaxType } from 'src/generated/prisma/enums';
 import { ShippingService } from 'src/shipping/shipping.service';
@@ -26,7 +24,6 @@ export class CartService {
   constructor(
     private prisma: PrismaService,
     private product: ProductService,
-    private coupon: CouponService,
     private tax: TaxService,
     private shipping: ShippingService,
     private flashSale: FlashSaleService,
@@ -54,13 +51,6 @@ export class CartService {
 
   // ── ADD ITEM ───────────────────────────────────────
   async addItem(userId: number, dto: CreateCartDto) {
-    const start = performance.now();
-
-    await this.prisma.$queryRaw`SELECT 1`;
-
-    console.log(
-      `[DB TEST] SELECT 1: ${(performance.now() - start).toFixed(0)}ms`,
-    );
     const totalStart = performance.now();
     const productStart = performance.now();
     // verify product exists and is active and stock available
@@ -440,98 +430,73 @@ export class CartService {
     };
   }
 
-  // ── HELPER — calculate totals ──────────────────────
+  // ── HELPER — format cart ──────────────────────
   private async formatCart(cart: CartWithItems): Promise<FormattedCart> {
-    const totalStart = performance.now();
+    const productData = cart.items.map((item) => ({
+      id: item.product.id,
+      price: Number(item.variant?.price ?? item.product.price),
+    }));
+    const [flashData, tax, shipping] = await Promise.all([
+      this.flashSale.getFlashPriceInfoBatch(productData),
+      this.tax.getActive(),
+      this.shipping.getActive(),
+    ]);
 
     let totalAmount = 0;
     let totalItems = 0;
     let totalSaving = 0;
 
-    const flashStart = performance.now();
+    const items: FormattedCartItem[] = cart.items.map((item) => {
+      const originalPrice = Number(item.variant?.price ?? item.product.price);
+      const flash =
+        flashData?.find((f) => f.productId === item.product.id) ?? null;
+      const effectivePrice = flash?.price ?? originalPrice;
+      const subtotal = effectivePrice * item.quantity;
+      const saving = (originalPrice - effectivePrice) * item.quantity;
 
-    const items: FormattedCartItem[] = await Promise.all(
-      cart.items.map(async (item: CartItemWithProduct) => {
-        const originalPrice = Number(item.variant?.price ?? item.product.price);
+      totalAmount += subtotal;
+      totalItems += item.quantity;
+      totalSaving += saving;
 
-        // ← check flash sale for this product
-        const flash = await this.flashSale.getFlashPriceInfo(item.product.id);
+      return {
+        ...item,
+        flashSaleId: flash?.saleId ?? null,
+        originalPrice,
+        flashPrice: flash?.price ?? null,
+        effectivePrice,
+        isOnFlashSale: flash !== null,
+        flashEndTime: flash?.endTime ?? null,
+        flashSaleName: flash?.saleName ?? null,
+        subtotal: Number(subtotal.toFixed(2)),
+        savings: Number(saving.toFixed(2)),
+      };
+    });
 
-        const effectivePrice = flash?.price ?? originalPrice;
-        const subtotal = effectivePrice * item.quantity;
-
-        totalSaving += originalPrice - effectivePrice;
-        totalAmount += subtotal;
-        totalItems += item.quantity;
-
-        return {
-          ...item,
-          flashSaleId: flash?.saleId ?? null,
-          originalPrice,
-          flashPrice: flash?.price ?? null, // null if no sale
-          effectivePrice, // actual price used
-          isOnFlashSale: flash !== null,
-          flashEndTime: flash?.endTime,
-          flashSaleName: flash?.saleName,
-          subtotal: Number(subtotal.toFixed(2)),
-          savings: Number((originalPrice - effectivePrice).toFixed(2)),
-        };
-      }),
-    );
-
-    console.log(
-      `[cart] flashSale: ${(performance.now() - flashStart).toFixed(0)}ms`,
-    );
-
-    const taxStart = performance.now();
-
-    const [tax, shipping] = await Promise.all([
-      this.tax.getActive(),
-      this.shipping.getActive(),
-    ]);
-
-    //Get Active tax
-    //const tax = await this.tax.getActive();
+    // ── Step 4: calculate totals ───────────────────────
+    const taxRate = Number(tax?.rate ?? 0);
     const taxAmount =
-      tax?.type === TaxType.FIXED
-        ? Number(tax?.rate ?? 0)
-        : (totalAmount * Number(tax?.rate ?? 0)) / 100;
+      tax?.type === TaxType.FIXED ? taxRate : (totalAmount * taxRate) / 100;
 
-    console.log(`[cart] tax: ${(performance.now() - taxStart).toFixed(0)}ms`);
-
-    const shippingStart = performance.now();
-    // Get Active shipping
-    //const shipping = await this.shipping.getActive();
-
-    console.log(
-      `[cart] shipping: ${(performance.now() - shippingStart).toFixed(0)}ms`,
-    );
-
-    console.log(
-      `[cart] formatCart TOTAL: ${(performance.now() - totalStart).toFixed(0)}ms`,
-    );
     const shippingAmount = Number(shipping?.price ?? 0);
+    const discountAmount = cart.discountAmount
+      ? Number(cart.discountAmount)
+      : 0;
 
-    //Calculate grand total
     const grandTotal =
-      (cart.discountAmount
-        ? totalAmount - Number(cart.discountAmount)
-        : totalAmount) +
-      taxAmount +
-      shippingAmount;
+      totalAmount - discountAmount + taxAmount + shippingAmount;
 
     return {
       id: cart.id,
       userId: cart.userId,
       items,
       totalItems,
-      totalAmount,
+      totalAmount: Number(totalAmount.toFixed(2)),
       totalSavings: Number(totalSaving.toFixed(2)),
-      taxAmount,
-      grandTotal,
-      shippingAmount,
-      discountAmount: cart.discountAmount ? Number(cart.discountAmount) : 0,
-      couponCode: cart.couponCode ? cart.couponCode : '',
+      taxAmount: Number(taxAmount.toFixed(2)),
+      shippingAmount: Number(shippingAmount.toFixed(2)),
+      grandTotal: Number(grandTotal.toFixed(2)),
+      discountAmount,
+      couponCode: cart.couponCode ?? '',
       updatedAt: cart.updatedAt,
     };
   }

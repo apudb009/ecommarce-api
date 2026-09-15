@@ -9,6 +9,7 @@ import { PrismaService } from 'src/prisma.service';
 import { DiscountType } from 'src/generated/prisma/enums';
 import { CacheKeys, CacheTags, CacheTTL } from 'src/common/cache/cache-keys';
 import { CacheService } from 'src/common/cache/cache.service';
+import { FlashSaleProduct } from './entities/flash-sale.entity';
 
 @Injectable()
 export class FlashSaleService {
@@ -218,6 +219,81 @@ export class FlashSaleService {
       discountValue: value,
       endTime: sale.endTime,
     };
+  }
+
+  async getFlashPriceInfoBatch(
+    productData: { id: number; price: number }[],
+  ): Promise<FlashSaleProduct[] | null> {
+    if (productData.length === 0) {
+      return null;
+    }
+
+    const now = new Date();
+
+    const productIds = productData.map((item) => item.id);
+    const cacheKey = `flash:batch:${JSON.stringify(productData)}`;
+
+    return this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        // ── single query for ALL products ─────────────────
+        const sales = await this.prisma.flashSale.findMany({
+          where: {
+            products: {
+              some: {
+                productId: {
+                  in: productIds,
+                },
+              },
+            },
+            isActive: true,
+            startTime: { lte: now },
+            endTime: { gte: now },
+          },
+          select: {
+            id: true,
+            name: true,
+            discountType: true,
+            discountValue: true,
+            endTime: true,
+            products: {
+              select: {
+                productId: true,
+              },
+            },
+          },
+        });
+
+        const result: FlashSaleProduct[] = [];
+
+        for (const product of productData) {
+          const sale = sales.find((sale) =>
+            sale.products.some((item) => item.productId === product.id),
+          );
+          const original = Number(product.price);
+          const value = Number(sale?.discountValue ?? '0');
+
+          const price =
+            sale?.discountType === 'PERCENTAGE'
+              ? Number((original - (original * value) / 100).toFixed(2))
+              : Math.max(0, original - value);
+
+          result.push({
+            productId: product.id,
+            price,
+            saleId: sale?.id ?? null,
+            saleName: sale?.name,
+            discountType: sale?.discountType,
+            discountValue: value,
+            endTime: sale?.endTime,
+          });
+        }
+
+        return result;
+      },
+      CacheTTL.LONG,
+      [CacheTags.FLASH_SALES],
+    );
   }
 
   // ── GET FLASH PRICE (used in cart/order) ───────────
