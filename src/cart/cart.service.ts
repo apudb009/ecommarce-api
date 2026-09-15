@@ -54,8 +54,14 @@ export class CartService {
 
   // ── ADD ITEM ───────────────────────────────────────
   async addItem(userId: number, dto: CreateCartDto) {
+    const totalStart = performance.now();
+    const productStart = performance.now();
     // verify product exists and is active and stock available
     const product = await this.product.findOne(dto.productId);
+
+    console.log(
+      `[cart] product.findOne: ${(performance.now() - productStart).toFixed(0)}ms`,
+    );
 
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -96,11 +102,12 @@ export class CartService {
       );
     }
 
+    const cartStart = performance.now();
+
     let cart = await this.prisma.cart.findUnique({
       where: {
         userId,
       },
-      include: this.getCartInclude(),
     });
 
     if (!cart) {
@@ -108,9 +115,15 @@ export class CartService {
         data: {
           userId,
         },
-        include: this.getCartInclude(),
+        //include: this.getCartInclude(),
       });
     }
+
+    console.log(
+      `[cart] cart.findUnique: ${(performance.now() - cartStart).toFixed(0)}ms`,
+    );
+
+    const existingItemStart = performance.now();
 
     // check if product already in cart
     const existingItem = await this.prisma.cartItem.findUnique({
@@ -121,6 +134,12 @@ export class CartService {
         },
       },
     });
+
+    console.log(
+      `[cart] cartItem.findUnique: ${(performance.now() - existingItemStart).toFixed(0)}ms`,
+    );
+
+    const mutationStart = performance.now();
 
     if (existingItem) {
       const quantity = existingItem.quantity + dto.quantity;
@@ -155,8 +174,23 @@ export class CartService {
       });
     }
 
-    //Return updated cart
-    return await this.getFormattedCart(userId);
+    console.log(
+      `[cart] cartItem mutation: ${(performance.now() - mutationStart).toFixed(0)}ms`,
+    );
+
+    const formatStart = performance.now();
+
+    const result = await this.getFormattedCart(userId);
+
+    console.log(
+      `[cart] getFormattedCart: ${(performance.now() - formatStart).toFixed(0)}ms`,
+    );
+
+    console.log(
+      `[cart] TOTAL: ${(performance.now() - totalStart).toFixed(0)}ms`,
+    );
+
+    return result;
   }
 
   // ── Apply Coupon ──────────────────────
