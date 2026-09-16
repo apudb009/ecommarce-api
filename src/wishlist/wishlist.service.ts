@@ -9,13 +9,13 @@ export class WishlistService {
   async getOrCreate(userId: number) {
     const wishlist = await this.prisma.wishlist.findUnique({
       where: { userId },
-      include: this.wishlistInclude(),
+      select: this.wishlistSelect(),
     });
 
     if (!wishlist) {
       return this.prisma.wishlist.create({
         data: { userId },
-        include: this.wishlistInclude(),
+        select: this.wishlistSelect(),
       });
     }
     return wishlist;
@@ -116,6 +116,37 @@ export class WishlistService {
             include: {
               category: { select: { id: true, name: true, slug: true } },
               _count: { select: { reviews: true } },
+            },
+          },
+        },
+        orderBy: { addedAt: 'desc' as const },
+      },
+    };
+  }
+
+  private wishlistSelect() {
+    return {
+      id: true,
+      items: {
+        select: {
+          product: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              price: true,
+              variants: {
+                select: {
+                  id: true,
+                },
+              },
+              images: {
+                select: {
+                  url: true,
+                  isMain: true,
+                },
+              },
+              isActive: true,
             },
           },
         },
