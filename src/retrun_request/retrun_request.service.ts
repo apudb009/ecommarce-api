@@ -46,7 +46,10 @@ export class RetrunRequestService {
         userId,
         ...dto,
       },
-      include: {
+      select: {
+        id: true,
+        reason: true,
+        status: true,
         order: {
           select: {
             id: true,
