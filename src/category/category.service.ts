@@ -64,24 +64,6 @@ export class CategoryService {
       CacheTTL.VERY_LONG,
       [CacheTags.CATEGORIES],
     );
-
-    /*
-    return await this.prisma.category.findMany({
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        _count: {
-          select: {
-            products: true,
-          },
-        },
-      },
-      orderBy: {
-        name: 'asc',
-      },
-    });
-    */
   }
 
   // ── GET ONE BY SLUG ────────────────────────────────
@@ -155,7 +137,10 @@ export class CategoryService {
       where: {
         slug,
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
         _count: {
           select: {
             products: true,
