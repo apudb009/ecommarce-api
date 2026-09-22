@@ -140,9 +140,9 @@ export class UserService {
       ...(search && {
         OR: [...whereClause].filter(Boolean),
       }),
-      ...(role && {
-        role: { equals: role },
-      }),
+      ...{
+        role: role ? { equals: role } : { not: { equals: 'CUSTOMER' } },
+      },
     };
     const [users, total] = await Promise.all([
       this.prismaService.user.findMany({
@@ -166,6 +166,68 @@ export class UserService {
               id: true,
             },
           },
+        },
+      }),
+      this.prismaService.user.count({ where }),
+    ]);
+
+    return {
+      data: users,
+      meta: {
+        total,
+        page,
+        limit,
+        lastPage: Math.ceil(total / limit),
+        hasNextPage: total > page * limit,
+        hasPrevPage: page > 1,
+      },
+    };
+  }
+
+  async findAllCustomer(dto: FilterUserDto) {
+    const {
+      search,
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = dto;
+    const skip = (page - 1) * limit;
+    const whereClause: Prisma.UserWhereInput[] = [];
+
+    if (search) {
+      whereClause.push(
+        ...[
+          {
+            email: { contains: search, mode: QueryMode.insensitive },
+          },
+          { name: { contains: search, mode: QueryMode.insensitive } },
+        ],
+      );
+    }
+
+    const where = {
+      role: { equals: 'CUSTOMER' },
+      ...(search && {
+        OR: [...whereClause].filter(Boolean),
+      }),
+    };
+
+    const [users, total] = await Promise.all([
+      this.prismaService.user.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          username: true,
+          createdAt: true,
         },
       }),
       this.prismaService.user.count({ where }),

@@ -43,11 +43,19 @@ export class UserController {
     return this.userService.createFromAdmin(createUserDto);
   }
 
+  //Route for all users excluding customers
   @Get('admin/all')
   @UseGuards(PermissionGuard)
   @RequirePermission('users', 'read')
   findAll(@Query() dto: FilterUserDto) {
     return this.userService.findAll(dto);
+  }
+
+  @Get('admin/customers')
+  @UseGuards(PermissionGuard)
+  @RequirePermission('users', 'read')
+  findAllCustomers(@Query() dto: FilterUserDto) {
+    return this.userService.findAllCustomer(dto);
   }
 
   @Get('me')
