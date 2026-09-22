@@ -75,18 +75,20 @@ export class WishlistService {
       throw new BadRequestException('Product not in wishlist');
     }
 
-    const result = await this.prisma.wishlistItem.deleteMany({
+    const result = await this.prisma.wishlistItem.delete({
       where: {
-        wishlistId: wishlist.id,
-        productId,
+        wishlistId_productId: {
+          wishlistId: wishlist.id,
+          productId,
+        },
       },
     });
 
-    if (result.count === 0) {
+    if (!result) {
       throw new BadRequestException('Product not in wishlist');
     }
 
-    return this.getOrCreate(userId);
+    return await this.getOrCreate(userId);
   }
 
   // ── CLEAR ──────────────────────────────────────────
