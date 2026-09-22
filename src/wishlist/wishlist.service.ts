@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { Prisma } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
@@ -25,64 +26,67 @@ export class WishlistService {
   async addItem(userId: number, productId: number) {
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
+      select: { id: true },
     });
 
     if (!product) {
       throw new BadRequestException('Product not found');
     }
 
-    const wishlist = await this.getOrCreate(userId);
-
-    const productExist = await this.prisma.wishlistItem.findUnique({
+    const wishlist = await this.prisma.wishlist.upsert({
       where: {
-        wishlistId_productId: {
-          wishlistId: wishlist.id,
-          productId,
-        },
+        userId,
       },
+      create: { userId },
+      update: {},
+      select: { id: true },
     });
 
-    if (productExist) {
-      throw new BadRequestException('Product already in wishlist');
+    try {
+      await this.prisma.wishlistItem.create({
+        data: {
+          wishlistId: wishlist.id,
+          productId: product.id,
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new BadRequestException('Product already in wishlist');
+      }
+      throw error;
     }
 
-    await this.prisma.wishlistItem.create({
-      data: {
-        wishlist: { connect: { userId } },
-        product: { connect: { id: productId } },
-      },
-    });
-
-    return await this.getOrCreate(userId);
+    return this.getOrCreate(userId);
   }
 
   // ── REMOVE ITEM ────────────────────────────────────
   async removeItem(userId: number, productId: number) {
-    const wishlist = await this.getOrCreate(userId);
-
-    const productExist = await this.prisma.wishlistItem.findUnique({
+    const wishlist = await this.prisma.wishlist.findUnique({
       where: {
-        wishlistId_productId: {
-          wishlistId: wishlist.id,
-          productId,
-        },
+        userId,
       },
+      select: { id: true },
     });
 
-    if (!productExist) {
+    if (!wishlist) {
       throw new BadRequestException('Product not in wishlist');
     }
 
-    await this.prisma.wishlistItem.delete({
+    const result = await this.prisma.wishlistItem.deleteMany({
       where: {
-        wishlistId_productId: {
-          wishlistId: wishlist.id,
-          productId,
-        },
+        wishlistId: wishlist.id,
+        productId,
       },
     });
 
-    return await this.getOrCreate(userId);
+    if (result.count === 0) {
+      throw new BadRequestException('Product not in wishlist');
+    }
+
+    return this.getOrCreate(userId);
   }
 
   // ── CLEAR ──────────────────────────────────────────
@@ -95,14 +99,12 @@ export class WishlistService {
 
   // ── CHECK IF PRODUCT IN WISHLIST ───────────────────
   async isInWishlist(userId: number, productId: number) {
-    const wishlist = await this.getOrCreate(userId);
-    const productExist = await this.prisma.wishlistItem.findUnique({
+    const productExist = await this.prisma.wishlistItem.findFirst({
       where: {
-        wishlistId_productId: {
-          wishlistId: wishlist.id,
-          productId,
-        },
+        productId,
+        wishlist: { userId },
       },
+      select: { id: true },
     });
     return !!productExist;
   }

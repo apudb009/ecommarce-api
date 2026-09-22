@@ -33,10 +33,12 @@ import { StoreSettingsModule } from './store-settings/store-settings.module';
 import { FlashSaleModule } from './flash-sale/flash-sale.module';
 import { OrderTrackingModule } from './order-tracking/order-tracking.module';
 import { RoleModule } from './role/role.module';
+import { PrismaModule } from './prisma.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
     ThrottlerModule.forRoot([
       {
         name: 'short',
