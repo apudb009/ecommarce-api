@@ -24,7 +24,6 @@ export class WishlistService {
 
   // ── ADD ITEM ───────────────────────────────────────
   async addItem(userId: number, productId: number) {
-    const t0 = Date.now();
     try {
       const [wishlist] = await this.prisma.$transaction([
         this.prisma.wishlist.upsert({
@@ -34,13 +33,12 @@ export class WishlistService {
           select: { id: true },
         }),
       ]);
-      console.log('upsert took', Date.now() - t0, 'ms');
-      const t1 = Date.now();
+
       const item = await this.prisma.wishlistItem.create({
         data: { wishlistId: wishlist.id, productId },
         select: { id: true },
       });
-      console.log('create took', Date.now() - t1, 'ms');
+
       return { success: true, itemId: item.id };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
