@@ -10,13 +10,13 @@ export class WishlistService {
   async getOrCreate(userId: number) {
     const wishlist = await this.prisma.wishlist.findUnique({
       where: { userId },
-      //select: this.wishlistSelect(),
+      select: this.wishlistSelect(),
     });
 
     if (!wishlist) {
       return this.prisma.wishlist.create({
         data: { userId },
-        //select: this.wishlistSelect(),
+        select: this.wishlistSelect(),
       });
     }
     return wishlist;
@@ -24,42 +24,33 @@ export class WishlistService {
 
   // ── ADD ITEM ───────────────────────────────────────
   async addItem(userId: number, productId: number) {
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
-      select: { id: true },
-    });
-
-    if (!product) {
-      throw new BadRequestException('Product not found');
-    }
-
-    const wishlist = await this.prisma.wishlist.upsert({
-      where: {
-        userId,
-      },
-      create: { userId },
-      update: {},
-      select: { id: true },
-    });
-
     try {
-      await this.prisma.wishlistItem.create({
-        data: {
-          wishlistId: wishlist.id,
-          productId: product.id,
-        },
+      const [wishlist] = await this.prisma.$transaction([
+        this.prisma.wishlist.upsert({
+          where: { userId },
+          create: { userId },
+          update: {},
+          select: { id: true },
+        }),
+      ]);
+
+      const item = await this.prisma.wishlistItem.create({
+        data: { wishlistId: wishlist.id, productId },
+        select: { id: true },
       });
+
+      return { success: true, itemId: item.id };
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
-        throw new BadRequestException('Product already in wishlist');
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          throw new BadRequestException('Product already in wishlist');
+        }
+        if (error.code === 'P2003') {
+          throw new BadRequestException('Product not found');
+        }
       }
       throw error;
     }
-
-    return this.getOrCreate(userId);
   }
 
   // ── REMOVE ITEM ────────────────────────────────────
