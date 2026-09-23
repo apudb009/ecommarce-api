@@ -81,9 +81,6 @@ export class ProductService {
       CacheTTL.SHORT,
       [CacheTags.PRODUCTS],
     );
-    //const productsWithMeta = await this.helper.getAllProductsWithMeta(fiterDto);
-
-    //return productsWithMeta;
   }
 
   // ── GET ALL FOR ADMIN (with search, filter, pagination) ──────

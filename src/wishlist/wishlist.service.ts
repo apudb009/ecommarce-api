@@ -10,13 +10,13 @@ export class WishlistService {
   async getOrCreate(userId: number) {
     const wishlist = await this.prisma.wishlist.findUnique({
       where: { userId },
-      select: this.wishlistSelect(),
+      //select: this.wishlistSelect(),
     });
 
     if (!wishlist) {
       return this.prisma.wishlist.create({
         data: { userId },
-        select: this.wishlistSelect(),
+        //select: this.wishlistSelect(),
       });
     }
     return wishlist;
