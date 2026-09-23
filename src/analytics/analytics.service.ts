@@ -32,7 +32,7 @@ export class AnalyticsService {
       }),
       this.prisma.order.count(),
       this.prisma.product.count(),
-      this.prisma.user.count(),
+      this.prisma.user.count({ where: { role: { equals: 'CUSTOMER' } } }),
       this.prisma.review.count(),
       this.prisma.order.count({
         where: {
