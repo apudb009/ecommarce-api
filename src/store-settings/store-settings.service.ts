@@ -59,18 +59,6 @@ export class StoreSettingsService {
       CacheTTL.LONG,
       [CacheTags.SETTINGS],
     );
-
-    /*
-    const settings = await this.prisma.storeSetting.findMany({
-      orderBy: { key: 'asc' },
-    });
-
-    // convert to key-value object
-    return settings.reduce(
-      (acc, setting) => ({ ...acc, [setting.key]: this.parseValue(setting) }),
-      {} as Record<string, string | number | boolean | object>,
-    );
-    */
   }
 
   // ── GET ONE ────────────────────────────────────────

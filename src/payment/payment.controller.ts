@@ -10,6 +10,7 @@ import {
 import type { Request as ExpressRequest } from 'express';
 import { PaymentService } from './payment.service';
 import { CreatePaymentIntentDto } from './dto/create-payment-intent.dto';
+import { CreateGuestPaymentIntentDto } from './dto/create-guest-payment-intent.dto';
 import { Public } from 'src/auth/constants';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
@@ -28,6 +29,15 @@ export class PaymentController {
       createPaymentDto,
       req.user.sub,
     );
+  }
+
+  // POST /api/payment/guest/create-intent
+  @Public()
+  @Post('/guest/create-intent')
+  createGuestPaymentIntent(
+    @Body() createPaymentDto: CreateGuestPaymentIntentDto,
+  ) {
+    return this.paymentService.createGuestPaymentIntent(createPaymentDto);
   }
 
   // POST /api/payment/webhook

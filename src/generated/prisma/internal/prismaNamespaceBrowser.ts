@@ -209,7 +209,10 @@ export const OrderScalarFieldEnum = {
   addressId: 'addressId',
   discountAmount: 'discountAmount',
   couponCode: 'couponCode',
-  trackingNumber: 'trackingNumber'
+  trackingNumber: 'trackingNumber',
+  guestEmail: 'guestEmail',
+  guestName: 'guestName',
+  shippingAddress: 'shippingAddress'
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
@@ -270,7 +273,11 @@ export const InvoiceScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   orderId: 'orderId',
-  userId: 'userId'
+  userId: 'userId',
+  guestEmail: 'guestEmail',
+  guestName: 'guestName',
+  downloadToken: 'downloadToken',
+  tokenExpiresAt: 'tokenExpiresAt'
 } as const
 
 export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]

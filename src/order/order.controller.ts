@@ -13,10 +13,11 @@ import {
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { FilterOrderDto } from './dto/filter-order.dto';
-import { RequirePermission } from 'src/auth/constants';
+import { Public, RequirePermission } from 'src/auth/constants';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { PermissionGuard } from 'src/auth/guards/permission.guard';
+import { CreateGuestOrderDto } from './dto/create-guest-order.dto';
 
 @ApiBearerAuth('access-token')
 @Controller('api/orders')
@@ -31,6 +32,13 @@ export class OrderController {
     @Request() req: { user: { sub: number } },
   ) {
     return this.orderService.create(req.user.sub, createOrderDto);
+  }
+
+  // ── GUEST ORDER (no auth required) ────────────────
+  @Public()
+  @Post('guest')
+  createGuestOrder(@Body() dto: CreateGuestOrderDto) {
+    return this.orderService.createGuestOrder(dto);
   }
 
   // GET /api/orders/me — my orders

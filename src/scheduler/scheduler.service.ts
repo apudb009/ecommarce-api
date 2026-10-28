@@ -100,24 +100,26 @@ export class SchedulerService {
         });
       });
 
-      // notify user
-      this.notification
-        .create(
-          {
-            type: NotificationType.ORDER_CANCELLED,
-            title: 'Order Cancelled ❌',
-            message: `Order #${order.id} was cancelled due to no payment within 24 hours.`,
-            link: `/orders/${order.id}`,
-          },
-          order.user.id,
-        )
-        .catch(() => {});
+      if (order.user) {
+        // notify user
+        this.notification
+          .create(
+            {
+              type: NotificationType.ORDER_CANCELLED,
+              title: 'Order Cancelled ❌',
+              message: `Order #${order.id} was cancelled due to no payment within 24 hours.`,
+              link: `/orders/${order.id}`,
+            },
+            order.user.id,
+          )
+          .catch(() => {});
+      }
 
       // send email
       this.mail
         .sendOrderCancelled({
-          to: order.user.email,
-          name: order.user.name!,
+          to: order?.user?.email ?? order.guestEmail!,
+          name: order?.user?.name ?? order.guestName!,
           orderId: order.id,
           totalAmount: Number(order.totalAmount),
         })

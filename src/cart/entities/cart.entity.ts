@@ -19,7 +19,24 @@ export type CartWithItems = Prisma.CartGetPayload<{
             };
           };
         };
-        variant: true;
+        variant: {
+          select: {
+            id: true;
+            color: true;
+            name: true;
+            price: true;
+            stock: true;
+            sku: true;
+            value: true;
+            images: {
+              select: {
+                id: true;
+                url: true;
+                isMain: true;
+              };
+            };
+          };
+        };
       };
     };
   };

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -8,7 +9,7 @@ import { InvoiceStatus, TaxType } from 'src/generated/prisma/enums';
 import { PrismaService } from 'src/prisma.service';
 import { InvoiceType } from './entity/invoice.type';
 import { TaxService } from 'src/tax/tax.service';
-import { Tax } from 'src/generated/prisma/client';
+import { Address, Tax, User } from 'src/generated/prisma/client';
 import { QueryMode } from 'src/generated/prisma/internal/prismaNamespace';
 import { FilterInvoiceDto } from './dto/filter-invoice.dto';
 
@@ -25,6 +26,13 @@ export class InvoiceService {
     const invoiceCount = await this.prisma.invoice.count();
     const invoiceNumber = `INV-${year}-${(invoiceCount + 1).toString().padStart(5, '0')}`;
     return invoiceNumber;
+  }
+
+  // ── GET INVOICE BY DOWNLOAD TOKEN ──────────────────────
+  async getOneByDownloadToken(token: string) {
+    return await this.prisma.invoice.findFirst({
+      where: { downloadToken: token },
+    });
   }
 
   // ── CREATE INVOICE FROM ORDER ──────────────────────
@@ -199,6 +207,51 @@ export class InvoiceService {
     return invoice;
   }
 
+  // ── GET ONE BY TOKEN ────────────────────────────────────────
+  async getOneByToken(id: number, token: string) {
+    const invoice = await this.prisma.invoice.findFirst({
+      where: { id, downloadToken: token },
+      include: {
+        order: {
+          include: {
+            items: {
+              include: {
+                product: true,
+                variant: {
+                  select: {
+                    id: true,
+                    name: true,
+                    value: true,
+                  },
+                },
+              },
+            },
+            address: true,
+            payment: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            username: true,
+          },
+        },
+      },
+    });
+
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found.');
+    }
+
+    if (invoice.tokenExpiresAt && invoice.tokenExpiresAt < new Date()) {
+      throw new BadRequestException('Download link has expired');
+    }
+
+    return invoice;
+  }
+
   // ── GET BY INVOICE NUMBER ──────────────────────────
   async getByInvoiceNumber(invoiceNo: string, userId: number, isAdmin = false) {
     const invoice = await this.prisma.invoice.findUnique({
@@ -356,11 +409,48 @@ export class InvoiceService {
     }
   }
 
+  // ── GENERATE PDF BY TOKEN ───────────────────────────
+  async generatePdfByToken(id: number, token: string): Promise<Buffer> {
+    const invoice = await this.getOneByToken(id, token);
+    const taxData = (await this.tax.getActive()) as Tax;
+
+    const html = this.buildInvoiceHtml(invoice, taxData);
+
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+
+    try {
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'load' });
+
+      const pdf = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: {
+          top: '20mm',
+          right: '15mm',
+          bottom: '20mm',
+          left: '15mm',
+        },
+      });
+
+      return Buffer.from(pdf);
+    } finally {
+      await browser.close();
+    }
+  }
+
   // ── BUILD HTML TEMPLATE ────────────────────────────
   private buildInvoiceHtml(invoice: InvoiceType, taxData: Tax) {
     const order = invoice.order;
-    const user = invoice.user;
-    const address = order.address;
+    const user = invoice.user as User;
+    const address = order.address as Address;
+    const isGuestOrder = !user || !user.id;
+    const deliveryAddress = isGuestOrder
+      ? this.parseGuestShippingAddress(order.shippingAddress)
+      : address;
 
     const taxRate =
       taxData.type === TaxType.PERCENTAGE
@@ -539,14 +629,14 @@ export class InvoiceService {
           <div class="info-grid">
             <div class="info-block">
               <h3>Billed To</h3>
-              <p class="name">${user.name || user.username}</p>
-              <p>${user.email}</p>
+              <p class="name">${isGuestOrder ? invoice.guestName : user.name || user.username}</p>
+              <p>${isGuestOrder ? invoice.guestEmail : user.email}</p>
             </div>
             <div class="info-block">
               <h3>Delivery Address</h3>
-              <p>${address.street}</p>
-              <p>${address.city}, ${address.state} ${address.postalCode}</p>
-              <p>${address.country}</p>
+              <p>${deliveryAddress?.street ?? ''}</p>
+              <p>${deliveryAddress?.city ?? ''}, ${deliveryAddress?.state ?? ''} ${deliveryAddress?.postalCode ?? ''}</p>
+              <p>${deliveryAddress?.country ?? ''}</p>
             </div>
             <div class="info-block">
               <h3>Invoice Details</h3>
@@ -598,8 +688,12 @@ export class InvoiceService {
                 <td>$${Number(order.totalAmount).toFixed(2)}</td>
               </tr>
               <tr>
+                <td>Discount</td>
+                <td>$${Number(order.discountAmount) === 0 ? '0.00' : Number(order.discountAmount).toFixed(2)}</td>
+              </tr>
+              <tr>
                 <td>Shipping</td>
-                <td>${Number(order.shippingAmount) === 0 ? 'Free' : Number(order.shippingAmount)}</td>
+                <td>${Number(order.shippingAmount) === 0 ? 'Free' : Number(order.shippingAmount).toFixed(2)}</td>
               </tr>
               <tr>
                 <td>Tax (${taxRate})</td>
@@ -633,5 +727,23 @@ export class InvoiceService {
       </body>
       </html>
     `;
+  }
+
+  private parseGuestShippingAddress(
+    shippingAddress: string | null,
+  ): Partial<
+    Pick<Address, 'street' | 'city' | 'state' | 'postalCode' | 'country'>
+  > {
+    if (!shippingAddress) {
+      return {};
+    }
+
+    try {
+      return JSON.parse(shippingAddress) as Partial<
+        Pick<Address, 'street' | 'city' | 'state' | 'postalCode' | 'country'>
+      >;
+    } catch {
+      return {};
+    }
   }
 }

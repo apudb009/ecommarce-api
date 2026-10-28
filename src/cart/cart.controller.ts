@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { CreateCartDto } from './dto/add-cart.dto';
@@ -59,8 +60,10 @@ export class CartController {
   removeItem(
     @User('sub') sub: number,
     @Param('productId', ParseIntPipe) productId: number,
+    @Query('variantId', new ParseIntPipe({ optional: true }))
+    variantId?: number,
   ) {
-    return this.cartService.removeItem(sub, productId);
+    return this.cartService.removeItem(sub, productId, variantId);
   }
 
   // DELETE /api/cart

@@ -234,6 +234,117 @@ export class MailService {
     });
   }
 
+  // ── GUEST ORDER CONFIRMATION ───────────────────────
+  async sendGuestOrderConfirmation(data: {
+    to: string;
+    name: string;
+    orderId: number;
+    items: {
+      productName: string;
+      quantity: number;
+      unitPrice: number;
+      total: number;
+    }[];
+    total: number;
+    invoiceNo: string;
+    invoiceId: number;
+    pdfBuffer?: Buffer;
+  }) {
+    const itemRows = data.items
+      .map(
+        (item) => `
+    <tr>
+      <td style="padding:8px;border-bottom:1px solid #f3f4f6">${item.productName}</td>
+      <td style="padding:8px;text-align:center;border-bottom:1px solid #f3f4f6">${item.quantity}</td>
+      <td style="padding:8px;text-align:right;border-bottom:1px solid #f3f4f6">$${Number(item.total).toFixed(2)}</td>
+    </tr>
+  `,
+      )
+      .join('');
+
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <body style="font-family:Arial,sans-serif;background:#f9fafb;margin:0;padding:20px">
+      <div style="max-width:560px;margin:0 auto;background:white;border-radius:12px;overflow:hidden">
+
+        <div style="background:#2563eb;padding:32px;text-align:center">
+          <h1 style="color:white;margin:0">✅ Order Confirmed!</h1>
+          <p style="color:rgba(255,255,255,0.8);margin:8px 0 0">
+            Order #${data.orderId} · Invoice ${data.invoiceNo}
+          </p>
+        </div>
+
+        <div style="padding:32px">
+          <p>Hi <strong>${data.name}</strong>,</p>
+          <p>Your order has been placed successfully.</p>
+
+          <table style="width:100%;border-collapse:collapse;margin:16px 0">
+            <thead>
+              <tr style="background:#f9fafb">
+                <th style="padding:8px;text-align:left;font-size:12px;color:#6b7280">ITEM</th>
+                <th style="padding:8px;text-align:center;font-size:12px;color:#6b7280">QTY</th>
+                <th style="padding:8px;text-align:right;font-size:12px;color:#6b7280">TOTAL</th>
+              </tr>
+            </thead>
+            <tbody>${itemRows}</tbody>
+            <tfoot>
+              <tr>
+                <td colspan="2" style="padding:12px 8px;font-weight:bold">Total</td>
+                <td style="padding:12px 8px;text-align:right;font-weight:bold;color:#2563eb">
+                  $${Number(data.total).toFixed(2)}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <!-- Invoice note -->
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:16px 0">
+            <p style="margin:0;color:#166534;font-size:14px">
+              📄 <strong>Your invoice (${data.invoiceNo}) is attached</strong> to this email as a PDF.
+            </p>
+          </div>
+
+          <!-- Create account CTA -->
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-top:16px">
+            <p style="margin:0;color:#1e40af;font-size:14px">
+              💡 <strong>Want to track your order?</strong><br/>
+              Create a free account to access order history and invoices anytime.
+            </p>
+            <a href="${this.config.get('FRONTEND_URL')}/register?email=${encodeURIComponent(data.to)}"
+               style="display:inline-block;margin-top:12px;background:#2563eb;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:600">
+              Create Account
+            </a>
+          </div>
+        </div>
+
+        <div style="text-align:center;padding:20px;background:#f9fafb;color:#9ca3af;font-size:12px">
+          © ${new Date().getFullYear()} ShopApp · Invoice ${data.invoiceNo}
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+    // ── send with PDF attachment ───────────────────────
+    await this.transporter.sendMail({
+      from: this.config.get('MAIL_FROM'),
+      to: data.to,
+      subject: `✅ Order #${data.orderId} Confirmed — Invoice ${data.invoiceNo}`,
+      html,
+      // attach PDF if provided
+      attachments: data.pdfBuffer
+        ? [
+            {
+              filename: `invoice-${data.invoiceNo}.pdf`,
+              content: data.pdfBuffer,
+              contentType: 'application/pdf',
+            },
+          ]
+        : [],
+    });
+  }
+
   // ── WELCOME EMAIL ──────────────────────────────────
   async sendWelcome(data: { to: string; name: string }) {
     const html = `

@@ -9,6 +9,9 @@ import { CouponModule } from 'src/coupon/coupon.module';
 import { NotificationModule } from 'src/notification/notification.module';
 import { OrderTrackingModule } from 'src/order-tracking/order-tracking.module';
 import { FlashSaleModule } from 'src/flash-sale/flash-sale.module';
+import { StoreSettingsModule } from 'src/store-settings/store-settings.module';
+import { ShippingModule } from 'src/shipping/shipping.module';
+import { TaxModule } from 'src/tax/tax.module';
 
 @Module({
   imports: [
@@ -20,6 +23,9 @@ import { FlashSaleModule } from 'src/flash-sale/flash-sale.module';
     NotificationModule,
     OrderTrackingModule,
     FlashSaleModule,
+    StoreSettingsModule,
+    TaxModule,
+    ShippingModule,
   ],
   controllers: [OrderController],
   providers: [OrderService],

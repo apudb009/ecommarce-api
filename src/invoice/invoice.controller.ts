@@ -1,7 +1,9 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
+  NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
@@ -13,7 +15,7 @@ import {
 } from '@nestjs/common';
 import * as express from 'express';
 import { InvoiceService } from './invoice.service';
-import { RequirePermission } from 'src/auth/constants';
+import { Public, RequirePermission } from 'src/auth/constants';
 import { InvoiceStatus } from 'src/generated/prisma/enums';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { FilterInvoiceDto } from './dto/filter-invoice.dto';
@@ -41,6 +43,33 @@ export class InvoiceController {
     @User('sub') sub: number,
   ) {
     return await this.invoice.getMyInvoices(filter, sub);
+  }
+
+  // GET /api/invoices/download/:token
+  @Public()
+  @Get('download/:token')
+  async downloadInvoiceByToken(
+    @Param('token') token: string,
+    @Res() res: express.Response,
+  ) {
+    const invoice = await this.invoice.getOneByDownloadToken(token);
+
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    if (invoice.tokenExpiresAt && invoice.tokenExpiresAt < new Date()) {
+      throw new BadRequestException('Download link has expired');
+    }
+
+    const pdf = await this.invoice.generatePdfByToken(invoice.id, token);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="invoice-${invoice.invoiceNo}.pdf"`,
+      'Content-Length': pdf.length,
+    });
+
+    res.end(pdf);
   }
 
   // GET /api/invoices/admin/all

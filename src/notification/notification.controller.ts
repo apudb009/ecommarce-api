@@ -32,7 +32,6 @@ export class NotificationController {
   @RequirePermission('notifications', 'read')
   @Get('admin/all')
   getAllNotifications(@Query() filter: FilterNotificationDto) {
-    console.log(filter);
     return this.notificationService.findAll(filter);
   }
 

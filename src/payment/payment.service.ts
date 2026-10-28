@@ -8,11 +8,18 @@ import { OrderService } from 'src/order/order.service';
 import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
 import { CreatePaymentIntentDto } from './dto/create-payment-intent.dto';
+import { CreateGuestPaymentIntentDto } from './dto/create-guest-payment-intent.dto';
 import {
   InvoiceStatus,
   OrderStatus,
   PaymentStatus,
 } from 'src/generated/prisma/enums';
+import { QueryMode } from 'src/generated/prisma/internal/prismaNamespace';
+
+type PayableOrder = Pick<
+  Awaited<ReturnType<OrderService['findOne']>>,
+  'id' | 'status' | 'grandTotalAmount' | 'payment'
+>;
 
 @Injectable()
 export class PaymentService {
@@ -36,9 +43,28 @@ export class PaymentService {
     createPaymentDto: CreatePaymentIntentDto,
     userId: number,
   ) {
-    // 1. fetch order
     const order = await this.order.findOne(createPaymentDto.orderId, userId);
+    return this.createIntentForOrder(order, userId);
+  }
 
+  async createGuestPaymentIntent(dto: CreateGuestPaymentIntentDto) {
+    const order = await this.prisma.order.findFirst({
+      where: {
+        id: dto.orderId,
+        userId: null,
+        guestEmail: { equals: dto.email, mode: QueryMode.insensitive },
+      },
+      include: { payment: true },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Guest order not found');
+    }
+
+    return this.createIntentForOrder(order);
+  }
+
+  private async createIntentForOrder(order: PayableOrder, userId?: number) {
     //2. Only pending orders can be paid
     if (order.status !== OrderStatus.PENDING) {
       throw new BadRequestException(
@@ -64,19 +90,26 @@ export class PaymentService {
       throw new BadRequestException('Payment already processed for this order');
     }
 
-    // 4. convert to cents (Stripe uses smallest currency unit)
+    // Keep application amounts in dollars; Stripe expects integer cents.
     const amount = Number(order.grandTotalAmount);
+    const stripeAmount = Math.round(amount * 100);
+
+    if (!Number.isSafeInteger(stripeAmount) || stripeAmount < 50) {
+      throw new BadRequestException(
+        'Order total must be at least $0.50 to create a payment.',
+      );
+    }
 
     // 5. create Stripe PaymentIntent
     const paymentIntent = await this.stripe.paymentIntents.create({
-      amount,
+      amount: stripeAmount,
       currency: 'usd',
       automatic_payment_methods: {
         enabled: true,
       },
       metadata: {
         orderId: order.id.toString(),
-        userId: userId.toString(),
+        ...(userId !== undefined && { userId: userId.toString() }),
       },
     });
 

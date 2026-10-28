@@ -131,7 +131,11 @@ export class CouponService {
   }
 
   // ── VALIDATE COUPON (used by cart/checkout) ────────
-  async validate(code: string, userId: number, orderAmount: number) {
+  async validate(
+    code: string,
+    userId: number | undefined,
+    orderAmount: number,
+  ) {
     const coupon = await this.prisma.coupon.findUnique({
       where: { code: code.toUpperCase() },
       include: {

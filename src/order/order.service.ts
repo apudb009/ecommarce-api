@@ -1,8 +1,11 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import * as crypto from 'crypto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { AddressService } from 'src/address/address.service';
@@ -20,8 +23,12 @@ import { InvoiceService } from 'src/invoice/invoice.service';
 import { CouponService } from 'src/coupon/coupon.service';
 import { NotificationService } from 'src/notification/notification.service';
 import { OrderTrackingService } from 'src/order-tracking/order-tracking.service';
-import { FlashSaleService } from 'src/flash-sale/flash-sale.service';
 import { QueryMode } from 'src/generated/prisma/internal/prismaNamespace';
+import { CreateGuestOrderDto } from './dto/create-guest-order.dto';
+import { StoreSettingsService } from 'src/store-settings/store-settings.service';
+import { TaxService } from 'src/tax/tax.service';
+import { ShippingService } from 'src/shipping/shipping.service';
+import { Order } from 'src/generated/prisma/client';
 
 @Injectable()
 export class OrderService {
@@ -35,7 +42,9 @@ export class OrderService {
     private coupon: CouponService,
     private notification: NotificationService,
     private orderTracking: OrderTrackingService,
-    private flashSale: FlashSaleService,
+    private storeSettings: StoreSettingsService,
+    private tax: TaxService,
+    private shipping: ShippingService,
   ) {}
 
   // ── PLACE ORDER FROM CART ──────────────────────────
@@ -167,10 +176,10 @@ export class OrderService {
           total: Number(item.total),
         })),
         address: {
-          street: order.address.street,
-          city: order.address.city,
-          country: order.address.country,
-          postalCode: order.address.postalCode,
+          street: order.address?.street ?? '',
+          city: order.address?.city ?? '',
+          country: order.address?.country ?? '',
+          postalCode: order.address?.postalCode ?? '',
         },
       })
       .catch(() => {});
@@ -421,14 +430,14 @@ export class OrderService {
 
     // fetch user for email
     const user = await this.prisma.user.findUnique({
-      where: { id: updatedOrder.userId },
+      where: { id: updatedOrder?.userId ?? 0 },
       select: { email: true, name: true, username: true },
     });
 
     // send notification
     this.notification
       .notifyOrderUpdate(
-        updatedOrder.userId,
+        updatedOrder?.userId ?? 0,
         updatedOrder.id,
         updatedOrder.status,
       )
@@ -463,6 +472,187 @@ export class OrderService {
       },
     });
     return count;
+  }
+
+  async createGuestOrder(dto: CreateGuestOrderDto) {
+    // ── 1. check guest checkout is enabled ────────────
+    const setting = await this.storeSettings.findOne('allow_guest_checkout');
+    if (setting !== true) {
+      throw new ForbiddenException('Guest checkout is not available');
+    }
+
+    // ── 2. validate + get products ────────────────────
+    if (!dto.items || dto.items.length === 0) {
+      throw new BadRequestException('Cart is empty');
+    }
+
+    const productIds = dto.items.map((i) => i.productId);
+
+    const products = await this.prisma.product.findMany({
+      where: { id: { in: productIds }, isActive: true },
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        stock: true,
+      },
+    });
+
+    const productMap = new Map(products.map((p) => [p.id, p]));
+
+    // validate all products exist and have stock
+    for (const item of dto.items) {
+      const product = productMap.get(item.productId);
+      if (!product) {
+        throw new NotFoundException(`Product ${item.productId} not found`);
+      }
+      if (product.stock < item.quantity) {
+        throw new BadRequestException(
+          `Insufficient stock for "${product.name}"`,
+        );
+      }
+    }
+
+    // ── 3. calculate totals ────────────────────────────
+    let totalAmount = 0;
+    const orderItems = dto.items.map((item) => {
+      const product = productMap.get(item.productId)!;
+      const price = Number(product.price);
+      const subtotal = price * item.quantity;
+      totalAmount += subtotal;
+
+      return {
+        productId: item.productId,
+        variantId: item.variantId ?? null,
+        productName: product.name,
+        quantity: item.quantity,
+        unitPrice: price,
+        total: subtotal,
+      };
+    });
+
+    // ── 4. apply coupon ────────────────────────────────
+    let discountAmount = 0;
+    let couponCode: string | null = null;
+
+    if (dto.couponCode) {
+      try {
+        const coupon = await this.coupon.validate(
+          dto.couponCode,
+          undefined,
+          totalAmount,
+        );
+        discountAmount = coupon.discount;
+        couponCode = dto.couponCode;
+      } catch {
+        // invalid coupon — ignore silently or throw
+      }
+    }
+
+    // ── 5. get tax + shipping ──────────────────────────
+    const [tax, shipping] = await Promise.all([
+      this.tax.getActive(),
+      this.shipping.getActive(),
+    ]);
+
+    const taxAmount =
+      tax?.type === 'FIXED'
+        ? Number(tax.rate)
+        : ((totalAmount - discountAmount) * Number(tax?.rate ?? 0)) / 100;
+
+    const shippingAmount = Number(shipping?.price ?? 0);
+    const grandTotal =
+      totalAmount - discountAmount + taxAmount + shippingAmount;
+
+    // ── 6. create order (no userId — guest) ───────────
+    const order = await this.prisma.$transaction(async (tx) => {
+      const order = await tx.order.create({
+        data: {
+          // userId: null  ← no user
+          guestEmail: dto.email,
+          guestName: dto.name,
+          status: 'PENDING',
+          totalAmount,
+          grandTotalAmount: grandTotal,
+          discountAmount,
+          couponCode,
+          taxAmount,
+          shippingAmount,
+
+          // store address directly on order
+          shippingAddress: JSON.stringify(dto.address),
+
+          items: {
+            create: orderItems,
+          },
+        },
+        include: {
+          items: {
+            select: {
+              id: true,
+              productId: true,
+              quantity: true,
+              salePrice: true,
+              unitPrice: true,
+              total: true,
+              productName: true,
+              variantId: true,
+              variant: {
+                select: {
+                  id: true,
+                  name: true,
+                  value: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // decrement stock
+      for (const item of dto.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { decrement: item.quantity } },
+        });
+      }
+
+      return order;
+    });
+
+    // ── generate invoice ───────────────────────────────
+    const invoice = await this.createGuestInvoice(order, dto);
+
+    // ── generate PDF invoice ───────────────────────────
+    let pdfBuffer: Buffer | undefined;
+
+    try {
+      pdfBuffer = await this.invoice.generatePdfByToken(
+        invoice.id,
+        invoice.downloadToken as string,
+      );
+    } catch (err) {
+      // PDF generation failed — still send email without PDF
+      throw new InternalServerErrorException(
+        `PDF generation failed for invoice ${invoice.id}: ${err}`,
+      );
+    }
+
+    // ── 7. send confirmation email ─────────────────────
+    await this.mail
+      .sendGuestOrderConfirmation({
+        to: dto.email,
+        name: dto.name,
+        orderId: order.id,
+        items: orderItems,
+        total: grandTotal,
+        invoiceNo: invoice.invoiceNo,
+        invoiceId: invoice.id,
+        pdfBuffer,
+      })
+      .catch(() => {}); // don't fail if email fails
+
+    return order;
   }
 
   // ── Helper methods ─────────────────────────────
@@ -537,5 +727,38 @@ export class OrderService {
         `Cannot transition order from "${current}" to "${next}". Allowed: ${allowed[current].join(', ') || 'none'}`,
       );
     }
+  }
+
+  // ── create invoice for guest ───────────────────────
+  private async createGuestInvoice(order: Order, dto: CreateGuestOrderDto) {
+    const date = new Date().getFullYear();
+    const invoiceNo = `INV-${date}-${order.id}`;
+
+    const downloadToken = crypto.randomBytes(32).toString('hex'); // ← secure token
+    const tokenExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+    const invoice = await this.prisma.invoice.create({
+      data: {
+        invoiceNo,
+        orderId: order.id,
+        // userId:    null  ← no user for guests
+        guestEmail: dto.email,
+        guestName: dto.name,
+        downloadToken,
+        tokenExpiresAt,
+        status: 'UNPAID',
+        issuedAt: new Date(),
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        //subtotal: order.totalAmount,
+        //taxAmount: order.taxAmount ?? 0,
+        //shippingAmount: order.shippingAmount ?? 0,
+        //discountAmount: order.discountAmount ?? 0,
+        //totalAmount: order.totalAmount,
+        //billingAddress: order.shippingAddress, // JSON string
+        //notes: `Guest order by ${dto.email}`,
+      },
+    });
+
+    return invoice;
   }
 }
